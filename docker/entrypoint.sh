@@ -633,15 +633,14 @@ if [ "${ENABLE_DATADOG_METRICS:-false}" = "true" ]; then
         echo "  Tags: ${DD_TAGS}"
         echo "  JTL File: ${RESULTS_JTL}"
         
-        # Start forwarder in background
+        # Start forwarder in background (non-fatal if it fails)
         python3 /usr/local/bin/datadog-forwarder.py \
             --jtl-file "${RESULTS_JTL}" \
             --dd-api-key "${DD_API_KEY}" \
             --dd-site "${DD_SITE}" \
             --tags "${DD_TAGS}" \
-            &
+            & FORWARDER_PID=$! || true
         
-        FORWARDER_PID=$!
         echo " [DATADOG] Forwarder started (PID: ${FORWARDER_PID})"
         echo "[DATADOG] Metrics will be sent in real-time as test runs"
     fi
