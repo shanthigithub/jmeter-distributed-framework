@@ -277,7 +277,9 @@ def main():
         sys.exit(0)
     except Exception as e:
         logger.error(f"[ERROR] Fatal error: {e}", exc_info=True)
-        sys.exit(1)
+        # Exit with 0 - Datadog forwarder is optional, shouldn't fail the container
+        logger.warning("Datadog forwarder failed, but exiting gracefully (exit 0)")
+        sys.exit(0)
 
 
 if __name__ == '__main__':
