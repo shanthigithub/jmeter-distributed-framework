@@ -1,5 +1,5 @@
 #!/bin/bash
-set -ex  # Add -x for detailed command logging to debug exit code 1 issue
+set -e  # Exit on error (removed -x diagnostic logging)
 
 # TestNG framework support added
 
@@ -816,12 +816,14 @@ if [ -n "$FORWARDER_PID" ]; then
         kill -TERM $FORWARDER_PID 2>/dev/null || true
         
         # Wait up to 5 seconds for graceful shutdown
-        for i in {1..5}; do
+        wait_count=0
+        while [ $wait_count -lt 5 ]; do
             if ! kill -0 $FORWARDER_PID 2>/dev/null; then
                 echo "✅ [DATADOG] Forwarder stopped gracefully"
                 break
             fi
             sleep 1
+            wait_count=$((wait_count + 1))
         done
         
         # Force kill if still running
