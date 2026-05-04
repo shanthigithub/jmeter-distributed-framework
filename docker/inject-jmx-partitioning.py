@@ -70,7 +70,7 @@ def inject_partitioning(jmx_file, container_id, total_containers):
         
         print(f"[PARTITION] {csv_name}")
         print(f"   File: {filename}")
-        print(f"   → offset={container_id}, increment={total_containers}")
+        print(f"   => offset={container_id}, increment={total_containers}")
         print(f"   (Container {container_id} will read rows {container_id}, {container_id + total_containers}, {container_id + 2*total_containers}, ...)\n")
         
         modified_count += 1
