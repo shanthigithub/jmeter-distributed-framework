@@ -50,7 +50,7 @@ fi
 
 # Validate environment
 if [ -z "$CONFIG_BUCKET" ] || [ -z "$RESULTS_BUCKET" ] || [ -z "$TEST_SCRIPT_S3" ]; then
-    echo "❌ [ERROR] Required environment variables not set:"
+    echo " [ERROR] Required environment variables not set:"
     echo "   CONFIG_BUCKET=${CONFIG_BUCKET:-<not set>}"
     echo "   RESULTS_BUCKET=${RESULTS_BUCKET:-<not set>}"
     echo "   TEST_SCRIPT_S3=${TEST_SCRIPT_S3:-<not set>}"
@@ -80,9 +80,9 @@ download_s3_file() {
         
         # Check if file exists in S3 before attempting download
         if aws s3 ls "s3://${bucket}/${key}" >/dev/null 2>&1; then
-            echo "  ✅ [VALIDATED] File exists in S3"
+            echo "   [VALIDATED] File exists in S3"
         else
-            echo "  ❌ [ERROR] File NOT found in S3: s3://${bucket}/${key}"
+            echo "   [ERROR] File NOT found in S3: s3://${bucket}/${key}"
             echo ""
             echo "  [DIAGNOSTIC HINTS]"
             echo "  1. Verify file exists:"
@@ -100,9 +100,9 @@ download_s3_file() {
         # Check if we have permission to read from this bucket
         echo "  [VALIDATE] Checking S3 read permissions..."
         if aws s3api head-object --bucket "${bucket}" --key "${key}" >/dev/null 2>&1; then
-            echo "  ✅ [VALIDATED] S3 read permissions OK"
+            echo "   [VALIDATED] S3 read permissions OK"
         else
-            echo "  ❌ [ERROR] Permission denied for s3://${bucket}/${key}"
+            echo "   [ERROR] Permission denied for s3://${bucket}/${key}"
             echo ""
             echo "  [REQUIRED IAM PERMISSIONS]"
             echo "  The ECS Task Role needs these permissions:"
@@ -127,7 +127,7 @@ download_s3_file() {
         fi
         
         # Now download the file
-        echo "  [DOWNLOAD] s3://${bucket}/${key} → ${local_path}"
+        echo "  [DOWNLOAD] s3://${bucket}/${key}  ${local_path}"
         echo "  [AWS CLI] Running: aws s3 cp s3://${bucket}/${key} ${local_path}"
         
         # Run download and capture output
@@ -143,7 +143,7 @@ download_s3_file() {
             # Verify download succeeded
             if [ -f "${local_path}" ]; then
                 local file_size=$(stat -c%s "${local_path}" 2>/dev/null || stat -f%z "${local_path}" 2>/dev/null || echo "0")
-                echo "  ✅ [SUCCESS] Downloaded ${file_size} bytes to: ${local_path}"
+                echo "   [SUCCESS] Downloaded ${file_size} bytes to: ${local_path}"
                 ls -lh "${local_path}" | awk '{print "  [FILE INFO] " $0}'
                 
                 # Additional validation for CSV files
@@ -152,14 +152,14 @@ download_s3_file() {
                     
                     # Check if file is empty
                     if [ "$file_size" -eq 0 ]; then
-                        echo "  ❌ [ERROR] CSV file is empty (0 bytes)"
+                        echo "   [ERROR] CSV file is empty (0 bytes)"
                         return 1
                     fi
                     
                     # Check if file has at least one line (header)
                     line_count=$(wc -l < "${local_path}" 2>/dev/null || echo "0")
                     if [ "$line_count" -eq 0 ]; then
-                        echo "  ❌ [ERROR] CSV file has no lines"
+                        echo "   [ERROR] CSV file has no lines"
                         echo "  [DEBUG] First 100 bytes of file:"
                         head -c 100 "${local_path}" | od -c
                         return 1
@@ -186,30 +186,30 @@ download_s3_file() {
                         # Check for BOM (EF BB BF in hex)
                         bom_check=$(head -c 3 "${local_path}" | od -A n -t x1 | tr -d ' ')
                         if [ "$bom_check" = "efbbbf" ]; then
-                            echo "  ⚠️  [WARNING] UTF-8 BOM detected - removing it"
+                            echo "    [WARNING] UTF-8 BOM detected - removing it"
                             # Remove BOM by skipping first 3 bytes
                             tail -c +4 "${local_path}" > "${local_path}.tmp"
                             mv "${local_path}.tmp" "${local_path}"
-                            echo "  ✅ [FIXED] BOM removed from CSV file"
+                            echo "   [FIXED] BOM removed from CSV file"
                         fi
                     fi
                 fi
                 
                 return 0
             else
-                echo "  ❌ [ERROR] Download exit code 0 but file not found: ${local_path}"
+                echo "   [ERROR] Download exit code 0 but file not found: ${local_path}"
                 echo "  [DEBUG] Listing directory:"
                 ls -la "$(dirname ${local_path})" 2>&1 | head -20
                 return 1
             fi
         else
-            echo "  ❌ [ERROR] AWS CLI failed with exit code: $download_exit"
+            echo "   [ERROR] AWS CLI failed with exit code: $download_exit"
             echo "  [ERROR] Failed to download: s3://${bucket}/${key}"
             echo "  [HINT] Check task role IAM permissions and S3 bucket policy"
             return 1
         fi
     else
-        echo "  ❌ [ERROR] Invalid S3 path format: ${s3_path}"
+        echo "   [ERROR] Invalid S3 path format: ${s3_path}"
         echo "  [HINT] Expected format: s3://bucket-name/path/to/file"
         return 1
     fi
@@ -223,14 +223,14 @@ upload_results() {
     if [ -f "${local_file}" ]; then
         echo "  [UPLOAD] ${local_file}"
         if aws s3 cp "${local_file}" "s3://${RESULTS_BUCKET}/${s3_key}"; then
-            echo "  ✅ [SUCCESS] Uploaded to: s3://${RESULTS_BUCKET}/${s3_key}"
+            echo "   [SUCCESS] Uploaded to: s3://${RESULTS_BUCKET}/${s3_key}"
             return 0
         else
-            echo "  ⚠️  [WARNING] Failed to upload: ${local_file}"
+            echo "    [WARNING] Failed to upload: ${local_file}"
             return 1
         fi
     else
-        echo "  ⚠️  [WARNING] File not found: ${local_file}"
+        echo "    [WARNING] File not found: ${local_file}"
         return 1
     fi
 }
@@ -242,11 +242,11 @@ echo "=========================================="
 echo ""
 
 # Download test script (required)
-echo "📥 Downloading test script..."
+echo " Downloading test script..."
 
 # Detect file extension from TEST_SCRIPT_S3
 FILE_EXTENSION="${TEST_SCRIPT_S3##*.}"
-echo "🔍 Detected file extension: .${FILE_EXTENSION}"
+echo " Detected file extension: .${FILE_EXTENSION}"
 
 # Download to appropriate location based on extension
 if [ "$FILE_EXTENSION" = "jmx" ]; then
@@ -259,7 +259,7 @@ elif [ "$FILE_EXTENSION" = "java" ]; then
     echo "[INFO] Test script type: Java/TestNG (Selenium + Healenium)"
     TEST_FILE="/tmp/test.java"
 else
-    echo "❌ [ERROR] Unsupported file extension: .${FILE_EXTENSION}"
+    echo " [ERROR] Unsupported file extension: .${FILE_EXTENSION}"
     echo "   Supported extensions:"
     echo "   - .jmx  (JMeter - API tests, JSR223 browser tests)"
     echo "   - .py   (Python Playwright - browser tests)"
@@ -268,11 +268,11 @@ else
     exit 1
 fi
 
-echo "📂 Test file will be saved to: ${TEST_FILE}"
+echo " Test file will be saved to: ${TEST_FILE}"
 
 if ! download_s3_file "$TEST_SCRIPT_S3" "$TEST_FILE"; then
     echo ""
-    echo "❌ [FATAL] Failed to download test script"
+    echo " [FATAL] Failed to download test script"
     echo "Cannot proceed without test plan. Exiting..."
     exit 1
 fi
@@ -280,7 +280,7 @@ echo ""
 
 # Download data file (optional)
 if [ -n "$DATA_FILE_S3" ]; then
-    echo "📥 Downloading data file..."
+    echo " Downloading data file..."
     # Extract filename from S3 path - PRESERVE ORIGINAL FILENAME (including spaces)
     # rewrite-jmx-csvfile-paths.py will match this exact filename
     DATA_FILENAME=$(basename "$DATA_FILE_S3")
@@ -289,9 +289,9 @@ if [ -n "$DATA_FILE_S3" ]; then
     
     if ! download_s3_file "$DATA_FILE_S3" "/tmp/${DATA_FILENAME}"; then
         echo ""
-        echo "⚠️  [WARNING] Failed to download data file, but continuing..."
+        echo "  [WARNING] Failed to download data file, but continuing..."
     else
-        echo "  ✅ Downloaded to: /tmp/${DATA_FILENAME}"
+        echo "   Downloaded to: /tmp/${DATA_FILENAME}"
     fi
     echo ""
 fi
@@ -301,7 +301,7 @@ if [ "$FILE_EXTENSION" = "jmx" ] && [ -f "$TEST_FILE" ]; then
     echo "=========================================="
     echo "[JMX] Rewriting CSV file paths for container"
     echo "=========================================="
-    echo "ℹ️  Converting local CSV paths to container paths (/tmp/)"
+    echo "  Converting local CSV paths to container paths (/tmp/)"
     echo ""
     
     # List all CSV files in /tmp before rewriting
@@ -310,23 +310,23 @@ if [ "$FILE_EXTENSION" = "jmx" ] && [ -f "$TEST_FILE" ]; then
     echo ""
     
     if python3 /usr/local/bin/rewrite-jmx-csvfile-paths.py "$TEST_FILE"; then
-        echo "  ✅ JMX file updated with container paths"
+        echo "   JMX file updated with container paths"
     else
-        echo "  ⚠️  Warning: Could not rewrite JMX CSV paths (will try to proceed)"
+        echo "    Warning: Could not rewrite JMX CSV paths (will try to proceed)"
     fi
     
     # Inject ThreadGroup partitioning (divide users among containers)
     echo "=========================================="
     echo "[JMX] Injecting ThreadGroup Partitioning"
     echo "=========================================="
-    echo "ℹ️  Dividing thread count among containers"
-    echo "ℹ️  Container ${CONTAINER_ID:-0} of ${NUM_CONTAINERS:-1}"
+    echo "  Dividing thread count among containers"
+    echo "  Container ${CONTAINER_ID:-0} of ${NUM_CONTAINERS:-1}"
     echo ""
     
     if python3 /usr/local/bin/inject-threadgroup-partitioning.py "$TEST_FILE" "${CONTAINER_ID:-0}" "${NUM_CONTAINERS:-1}"; then
-        echo "  ✅ ThreadGroup partitioning injected successfully"
+        echo "   ThreadGroup partitioning injected successfully"
     else
-        echo "  ⚠️  Warning: Could not inject ThreadGroup partitioning (all containers will run all threads!)"
+        echo "    Warning: Could not inject ThreadGroup partitioning (all containers will run all threads!)"
     fi
     echo ""
     
@@ -334,13 +334,13 @@ if [ "$FILE_EXTENSION" = "jmx" ] && [ -f "$TEST_FILE" ]; then
     echo "=========================================="
     echo "[JMX] Injecting CSV Data Partitioning"
     echo "=========================================="
-    echo "ℹ️  Adding offset/increment for distributed data access"
+    echo "  Adding offset/increment for distributed data access"
     echo ""
     
     if python3 /usr/local/bin/inject-jmx-partitioning.py "$TEST_FILE" "${CONTAINER_ID:-0}" "${NUM_CONTAINERS:-1}"; then
-        echo "  ✅ CSV partitioning injected successfully"
+        echo "   CSV partitioning injected successfully"
     else
-        echo "  ⚠️  Warning: Could not inject CSV partitioning (will use sequential access)"
+        echo "    Warning: Could not inject CSV partitioning (will use sequential access)"
     fi
     
     # Show what the JMX file now references
@@ -349,9 +349,9 @@ if [ "$FILE_EXTENSION" = "jmx" ] && [ -f "$TEST_FILE" ]; then
     grep -A 1 'name="filename"' "$TEST_FILE" | grep -v "^--$" || echo "  (no CSV references found)"
     echo ""
     
-    # ═══════════════════════════════════════════════════════════════════
+    # 
     # ENHANCED DEBUG: Verify CSV files actually exist before JMeter runs
-    # ═══════════════════════════════════════════════════════════════════
+    # 
     echo "=========================================="
     echo "[DEBUG] CSV File Verification"
     echo "=========================================="
@@ -362,10 +362,10 @@ if [ "$FILE_EXTENSION" = "jmx" ] && [ -f "$TEST_FILE" ]; then
     CSV_FILES=$(grep -A 1 'name="filename"' "$TEST_FILE" | grep '<stringProp' | sed 's/.*<stringProp[^>]*>//; s/<\/stringProp>.*//')
     if [ -n "$CSV_FILES" ]; then
         echo "$CSV_FILES" | while read -r csv_path; do
-            echo "  📄 JMX references: ${csv_path}"
+            echo "   JMX references: ${csv_path}"
         done
     else
-        echo "  ⚠️  No CSV files found in JMX"
+        echo "    No CSV files found in JMX"
     fi
     echo ""
     
@@ -380,7 +380,7 @@ if [ "$FILE_EXTENSION" = "jmx" ] && [ -f "$TEST_FILE" ]; then
         echo "$CSV_FILES" | while read -r csv_path; do
             if [ -f "$csv_path" ]; then
                 file_size=$(stat -c%s "$csv_path" 2>/dev/null || echo "unknown")
-                echo "  ✅ EXISTS: ${csv_path} (${file_size} bytes)"
+                echo "   EXISTS: ${csv_path} (${file_size} bytes)"
                 
                 # Show first 3 lines
                 echo "     First 3 lines:"
@@ -388,7 +388,7 @@ if [ "$FILE_EXTENSION" = "jmx" ] && [ -f "$TEST_FILE" ]; then
                     echo "       ${line}"
                 done
             else
-                echo "  ❌ MISSING: ${csv_path}"
+                echo "   MISSING: ${csv_path}"
                 
                 # Try to find similar files
                 filename=$(basename "$csv_path")
@@ -404,12 +404,12 @@ if [ "$FILE_EXTENSION" = "jmx" ] && [ -f "$TEST_FILE" ]; then
     echo ""
 fi
 
-echo "✅ [SUCCESS] All required downloads complete"
+echo " [SUCCESS] All required downloads complete"
 echo ""
 
-# ═══════════════════════════════════════════════════════════════════════════
+# 
 # NOTE: Datadog metrics are configured later via datadog-forwarder.py
-# ═══════════════════════════════════════════════════════════════════════════
+# 
 
 # Container Synchronization (optional)
 # If ENABLE_SYNC=true, wait for START signal from coordinator before running test
@@ -434,14 +434,14 @@ if [ "${ENABLE_SYNC:-false}" = "true" ]; then
         
         # Check timeout
         if [ $sync_elapsed -gt $MAX_SYNC_WAIT ]; then
-            echo "❌ [ERROR] Timeout waiting for START signal after ${sync_elapsed}s"
+            echo " [ERROR] Timeout waiting for START signal after ${sync_elapsed}s"
             echo "[ERROR] Expected signal at: s3://${CONFIG_BUCKET}/${SIGNAL_KEY}"
             exit 1
         fi
         
         # Check if START signal exists in S3
         if aws s3 ls "s3://${CONFIG_BUCKET}/${SIGNAL_KEY}" >/dev/null 2>&1; then
-            echo "✅ [SYNC] START signal received!"
+            echo " [SYNC] START signal received!"
             
             # Download and display signal data
             signal_data=$(aws s3 cp "s3://${CONFIG_BUCKET}/${SIGNAL_KEY}" - 2>/dev/null)
@@ -455,9 +455,9 @@ if [ "${ENABLE_SYNC:-false}" = "true" ]; then
             # Delete signal immediately - no longer needed after reading
             echo "[SYNC] Cleaning up temporary signal file..."
             if aws s3 rm "s3://${CONFIG_BUCKET}/${SIGNAL_KEY}" 2>/dev/null; then
-                echo "  ✅ Deleted: s3://${CONFIG_BUCKET}/${SIGNAL_KEY}"
+                echo "   Deleted: s3://${CONFIG_BUCKET}/${SIGNAL_KEY}"
             else
-                echo "  ⚠️  Could not delete signal (may not have permissions)"
+                echo "    Could not delete signal (may not have permissions)"
             fi
             echo ""
             break
@@ -494,10 +494,10 @@ sleep 2
 
 # Verify Xvfb is running
 if kill -0 $XVFB_PID 2>/dev/null; then
-    echo "✅ [BROWSER] Virtual display ready for headless browser execution"
+    echo " [BROWSER] Virtual display ready for headless browser execution"
 else
-    echo "⚠️  [WARNING] Xvfb may have failed to start"
-    echo "⚠️  [WARNING] Browser tests may not work properly"
+    echo "  [WARNING] Xvfb may have failed to start"
+    echo "  [WARNING] Browser tests may not work properly"
 fi
 echo ""
 
@@ -512,7 +512,7 @@ if [ "$FILE_EXTENSION" = "jmx" ]; then
         echo "[INFO] JMeter binary: $(which jmeter)"
         jmeter --version 2>&1 | head -3 || echo "  (version check failed)"
     else
-        echo "❌ [ERROR] JMeter binary not found in PATH!"
+        echo " [ERROR] JMeter binary not found in PATH!"
         echo "[DEBUG] PATH=$PATH"
         exit 1
     fi
@@ -528,7 +528,7 @@ elif [ "$FILE_EXTENSION" = "py" ]; then
         python3 --version
         echo "[INFO] Playwright: $(python3 -c 'import playwright; print(playwright.__version__)')"
     else
-        echo "❌ [ERROR] Python3 not found!"
+        echo " [ERROR] Python3 not found!"
         echo "[DEBUG] PATH=$PATH"
         exit 1
     fi
@@ -545,7 +545,7 @@ elif [ "$FILE_EXTENSION" = "js" ]; then
         echo "[INFO] npm: $(npm --version)"
         echo "[INFO] Playwright: $(node -e "console.log(require('playwright').version)")"
     else
-        echo "❌ [ERROR] Node.js not found!"
+        echo " [ERROR] Node.js not found!"
         echo "[DEBUG] PATH=$PATH"
         exit 1
     fi
@@ -561,21 +561,21 @@ elif [ "$FILE_EXTENSION" = "js" ]; then
         # Create /lib if it doesn't exist, then copy contents
         mkdir -p /lib
         cp -r /jmeter/lib/* /lib/
-        echo "  ✅ Copied /jmeter/lib/* → /lib/"
+        echo "   Copied /jmeter/lib/*  /lib/"
         
         echo "  [DEBUG] Contents of /lib AFTER copy:"
         ls -la /lib || echo "  [ERROR] Failed to list /lib"
         
         echo "  [DEBUG] Checking if test-runner.js exists:"
         if [ -f "/lib/test-runner.js" ]; then
-            echo "  ✅ Found: /lib/test-runner.js"
+            echo "   Found: /lib/test-runner.js"
         else
-            echo "  ❌ NOT FOUND: /lib/test-runner.js"
+            echo "   NOT FOUND: /lib/test-runner.js"
         fi
         
-    echo "  ℹ️  Path resolution: /tmp/test.js -> require('../lib/test-runner') -> /lib/test-runner"
+    echo "    Path resolution: /tmp/test.js -> require('../lib/test-runner') -> /lib/test-runner"
     else
-        echo "  ⚠️  Warning: /jmeter/lib not found"
+        echo "    Warning: /jmeter/lib not found"
     fi
     echo ""
     
@@ -590,7 +590,7 @@ elif [ "$FILE_EXTENSION" = "java" ]; then
         echo "[INFO] Maven: $(which mvn)"
         mvn --version 2>&1 | head -1
     else
-        echo "❌ [ERROR] Java or Maven not found!"
+        echo " [ERROR] Java or Maven not found!"
         echo "[DEBUG] PATH=$PATH"
         exit 1
     fi
@@ -603,21 +603,21 @@ fi
 # Start Datadog forwarder in background (if enabled)
 FORWARDER_PID=""
 
-echo "🔍 [DEBUG-ENTRYPOINT] Checking Datadog environment variable..."
-echo "🔍 [DEBUG-ENTRYPOINT] ENABLE_DATADOG_METRICS='${ENABLE_DATADOG_METRICS:-NOT_SET}'"
-echo "🔍 [DEBUG-ENTRYPOINT] Expected value: 'true' (lowercase)"
+echo " [DEBUG-ENTRYPOINT] Checking Datadog environment variable..."
+echo " [DEBUG-ENTRYPOINT] ENABLE_DATADOG_METRICS='${ENABLE_DATADOG_METRICS:-NOT_SET}'"
+echo " [DEBUG-ENTRYPOINT] Expected value: 'true' (lowercase)"
 
 if [ "${ENABLE_DATADOG_METRICS:-false}" = "true" ]; then
     echo ""
     echo "=========================================="
-    echo "[DATADOG] ✅ Metrics ENABLED - Starting Forwarder"
+    echo "[DATADOG]  Metrics ENABLED - Starting Forwarder"
     echo "=========================================="
     
     # Validate DD_API_KEY is provided
     if [ -z "$DD_API_KEY" ]; then
-        echo "⚠️  [WARNING] ENABLE_DATADOG_METRICS=true but DD_API_KEY not set"
-        echo "⚠️  [WARNING] Datadog metrics will NOT be sent"
-        echo "⚠️  [HINT] Set DD_API_KEY in ECS task definition secrets"
+        echo "  [WARNING] ENABLE_DATADOG_METRICS=true but DD_API_KEY not set"
+        echo "  [WARNING] Datadog metrics will NOT be sent"
+        echo "  [HINT] Set DD_API_KEY in ECS task definition secrets"
     else
         # Set Datadog site (default from secrets manager or fallback)
         DD_SITE="${DD_SITE:-datadoghq.com}"
@@ -642,14 +642,14 @@ if [ "${ENABLE_DATADOG_METRICS:-false}" = "true" ]; then
             &
         
         FORWARDER_PID=$!
-        echo "✅ [DATADOG] Forwarder started (PID: ${FORWARDER_PID})"
+        echo " [DATADOG] Forwarder started (PID: ${FORWARDER_PID})"
         echo "[DATADOG] Metrics will be sent in real-time as test runs"
     fi
     echo ""
 else
-    echo "[DATADOG] ⚠️  Metrics DISABLED"
-    echo "🔍 [DEBUG-ENTRYPOINT] ENABLE_DATADOG_METRICS was set to: '${ENABLE_DATADOG_METRICS:-NOT_SET}'"
-    echo "🔍 [DEBUG-ENTRYPOINT] This does NOT match 'true' (case-sensitive comparison)"
+    echo "[DATADOG]   Metrics DISABLED"
+    echo " [DEBUG-ENTRYPOINT] ENABLE_DATADOG_METRICS was set to: '${ENABLE_DATADOG_METRICS:-NOT_SET}'"
+    echo " [DEBUG-ENTRYPOINT] This does NOT match 'true' (case-sensitive comparison)"
     echo ""
 fi
 
@@ -684,8 +684,8 @@ elif [ "$FILE_EXTENSION" = "py" ]; then
     echo "=========================================="
     echo "[COMMAND] timeout ${TASK_TIMEOUT} python3 ${TEST_FILE}"
     echo ""
-    echo "ℹ️  [INFO] JMeter JVM will NOT start (Playwright runs directly)"
-    echo "ℹ️  [INFO] Memory saved: ~512 MB (no JMeter overhead)"
+    echo "  [INFO] JMeter JVM will NOT start (Playwright runs directly)"
+    echo "  [INFO] Memory saved: ~512 MB (no JMeter overhead)"
     echo ""
     
     # Export environment variables for Python script
@@ -705,9 +705,9 @@ elif [ "$FILE_EXTENSION" = "js" ]; then
     echo "=========================================="
     echo "[COMMAND] timeout ${TASK_TIMEOUT} node ${TEST_FILE}"
     echo ""
-    echo "ℹ️  [INFO] JMeter JVM will NOT start (Playwright runs directly)"
-    echo "ℹ️  [INFO] Memory saved: ~512 MB (no JMeter overhead)"
-    echo "ℹ️  [INFO] k6-compatible API! Easy migration to k6 later!"
+    echo "  [INFO] JMeter JVM will NOT start (Playwright runs directly)"
+    echo "  [INFO] Memory saved: ~512 MB (no JMeter overhead)"
+    echo "  [INFO] k6-compatible API! Easy migration to k6 later!"
     echo ""
     
     # Export environment variables for Node.js script
@@ -729,23 +729,23 @@ elif [ "$FILE_EXTENSION" = "java" ]; then
     echo "[RUN] Running TestNG Test (with timeout protection)"
     echo "=========================================="
     echo ""
-    echo "ℹ️  [INFO] Selenium + Healenium self-healing enabled"
-    echo "ℹ️  [INFO] Parallel execution configured in testng.xml"
+    echo "  [INFO] Selenium + Healenium self-healing enabled"
+    echo "  [INFO] Parallel execution configured in testng.xml"
     echo ""
     
     # Extract class name from Java file
     CLASS_NAME=$(grep -E "^public class" "${TEST_FILE}" | awk '{print $3}' | head -1)
     if [ -z "$CLASS_NAME" ]; then
-        echo "❌ [ERROR] Could not extract class name from ${TEST_FILE}"
+        echo " [ERROR] Could not extract class name from ${TEST_FILE}"
         exit 1
     fi
-    echo "📝 Detected test class: ${CLASS_NAME}"
+    echo " Detected test class: ${CLASS_NAME}"
     
     # Copy downloaded test file to Maven project structure
     MAVEN_TEST_DIR="/jmeter/java/src/test/java/com/testframework/tests"
     mkdir -p "${MAVEN_TEST_DIR}"
     cp "${TEST_FILE}" "${MAVEN_TEST_DIR}/${CLASS_NAME}.java"
-    echo "✅ Copied test to: ${MAVEN_TEST_DIR}/${CLASS_NAME}.java"
+    echo " Copied test to: ${MAVEN_TEST_DIR}/${CLASS_NAME}.java"
     echo ""
     
     # Export test configuration as system properties
@@ -794,7 +794,7 @@ elif [ "$FILE_EXTENSION" = "java" ]; then
     # Copy test results to /tmp for upload
     if [ -d "target/surefire-reports" ]; then
         cp target/surefire-reports/*.xml /tmp/ 2>/dev/null || true
-        echo "  ✅ Test reports copied to /tmp"
+        echo "   Test reports copied to /tmp"
     fi
 fi
 
@@ -819,7 +819,7 @@ if [ -n "$FORWARDER_PID" ]; then
         wait_count=0
         while [ $wait_count -lt 5 ]; do
             if ! kill -0 $FORWARDER_PID 2>/dev/null; then
-                echo "✅ [DATADOG] Forwarder stopped gracefully"
+                echo " [DATADOG] Forwarder stopped gracefully"
                 break
             fi
             sleep 1
@@ -832,21 +832,21 @@ if [ -n "$FORWARDER_PID" ]; then
             kill -KILL $FORWARDER_PID 2>/dev/null || true
         fi
     else
-        echo "✅ [DATADOG] Forwarder already completed"
+        echo " [DATADOG] Forwarder already completed"
     fi
     echo ""
 fi
 
 # Check if timeout occurred (exit code 124 = timeout)
 if [ $JMETER_RAW_EXIT -eq 124 ]; then
-    echo "⚠️  [TIMEOUT] Test exceeded maximum runtime (${TASK_TIMEOUT}s = $(($TASK_TIMEOUT / 60))m)"
-    echo "⚠️  [TIMEOUT] Estimated duration was ${ESTIMATED_DURATION}s, but test ran longer"
-    echo "⚠️  [TIMEOUT] This may indicate:"
+    echo "  [TIMEOUT] Test exceeded maximum runtime (${TASK_TIMEOUT}s = $(($TASK_TIMEOUT / 60))m)"
+    echo "  [TIMEOUT] Estimated duration was ${ESTIMATED_DURATION}s, but test ran longer"
+    echo "  [TIMEOUT] This may indicate:"
     echo "   - Test is hung or has an infinite loop"
     echo "   - Estimated duration was too short"
     echo "   - Server responses are slower than expected"
     echo ""
-    echo "ℹ️  [INFO] Partial results will still be uploaded if available"
+    echo "  [INFO] Partial results will still be uploaded if available"
 fi
 
 # Determine actual success by checking if results file was created
@@ -855,25 +855,25 @@ RESULTS_FILE="/tmp/results-0.jtl"
 if [ -f "$RESULTS_FILE" ] && [ -s "$RESULTS_FILE" ]; then
     # Results file exists and is not empty - TEST RAN SUCCESSFULLY
     if [ $JMETER_RAW_EXIT -eq 124 ]; then
-        echo "⚠️  [TIMEOUT] JMeter was stopped due to timeout, but partial results exist"
-        echo "ℹ️  [INFO] Container will report SUCCESS (exit 0) - partial results uploaded"
+        echo "  [TIMEOUT] JMeter was stopped due to timeout, but partial results exist"
+        echo "  [INFO] Container will report SUCCESS (exit 0) - partial results uploaded"
         JMETER_EXIT_CODE=0  # Changed: Return 0 for partial results
     else
-        echo "✅ [SUCCESS] JMeter test completed - results file created"
+        echo " [SUCCESS] JMeter test completed - results file created"
         if [ $JMETER_RAW_EXIT -ne 0 ]; then
-            echo "ℹ️  [INFO] JMeter reported exit code ${JMETER_RAW_EXIT} (test had failures/errors)"
-            echo "ℹ️  [INFO] Container will report SUCCESS (exit 0) - test executed properly"
-            echo "ℹ️  [INFO] Analyze JTL results file for actual test pass/fail status"
+            echo "  [INFO] JMeter reported exit code ${JMETER_RAW_EXIT} (test had failures/errors)"
+            echo "  [INFO] Container will report SUCCESS (exit 0) - test executed properly"
+            echo "  [INFO] Analyze JTL results file for actual test pass/fail status"
         fi
         JMETER_EXIT_CODE=0  # Always 0 if results exist
     fi
 elif [ $JMETER_RAW_EXIT -eq 0 ]; then
-    echo "✅ [SUCCESS] JMeter completed with exit code 0"
+    echo " [SUCCESS] JMeter completed with exit code 0"
     JMETER_EXIT_CODE=0
 else
     # No results file and non-zero exit - actual failure
-    echo "❌ [ERROR] JMeter failed with exit code: ${JMETER_RAW_EXIT}"
-    echo "❌ [ERROR] No results file created - test did not run properly"
+    echo " [ERROR] JMeter failed with exit code: ${JMETER_RAW_EXIT}"
+    echo " [ERROR] No results file created - test did not run properly"
     JMETER_EXIT_CODE=$JMETER_RAW_EXIT
 fi
 
@@ -905,9 +905,9 @@ done
 
 echo ""
 echo "[SUMMARY] Upload Summary:"
-echo "  ✅ Uploaded: ${uploaded_count} files"
+echo "   Uploaded: ${uploaded_count} files"
 if [ $failed_count -gt 0 ]; then
-    echo "  ⚠️  Failed: ${failed_count} files"
+    echo "    Failed: ${failed_count} files"
 fi
 
 echo ""
@@ -932,7 +932,7 @@ if [ -n "$XVFB_PID" ] && kill -0 $XVFB_PID 2>/dev/null; then
     echo "[CLEANUP] Stopping Xvfb (PID: ${XVFB_PID})..."
     kill $XVFB_PID 2>/dev/null || true
 fi
-echo "✅ [CLEANUP] Cleanup complete"
+echo " [CLEANUP] Cleanup complete"
 echo ""
 
 # Give a brief moment for cleanup
