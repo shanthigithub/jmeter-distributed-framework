@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -ex  # Add -x for detailed command logging to debug exit code 1 issue
 
 # TestNG framework support added
 
