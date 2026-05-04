@@ -209,6 +209,8 @@ def lambda_handler(event, context):
                 'taskArns': task_arns,
                 'numContainers': len(task_arns),
                 'expectedContainers': num_containers,
+                'totalThreads': threads,
+                'threadsPerContainer': threads_per_container,
             })
         
         print(f"✅ Launched {total_task_count} ECS tasks across {len(all_tasks)} tests")
