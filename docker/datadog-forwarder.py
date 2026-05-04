@@ -73,7 +73,7 @@ class JTLForwarder:
                 return False
             time.sleep(0.5)
         
-        logger.info("✅ JTL file found, starting to tail...")
+        logger.info("[SUCCESS] JTL file found, starting to tail...")
         return True
     
     def tail_jtl(self):
@@ -110,7 +110,7 @@ class JTLForwarder:
             # Final send on shutdown
             logger.info("Sending final buffered metrics...")
             self.send_metrics()
-            logger.info(f"✅ Forwarder completed. Total requests processed: {line_count}")
+            logger.info(f"[SUCCESS] Forwarder completed. Total requests processed: {line_count}")
     
     def process_line(self, line):
         """Parse JTL CSV line and buffer metrics"""
@@ -223,10 +223,10 @@ class JTLForwarder:
                 
                 metrics_sent += 4
             
-            logger.info(f"📊 Sent {metrics_sent} metrics to Datadog")
+            logger.info(f"[METRICS] Sent {metrics_sent} metrics to Datadog")
             
         except Exception as e:
-            logger.error(f"❌ Error sending metrics to Datadog: {e}")
+            logger.error(f"[ERROR] Error sending metrics to Datadog: {e}")
         
         finally:
             # Clear buffers
@@ -276,7 +276,7 @@ def main():
         logger.info("Interrupted by user")
         sys.exit(0)
     except Exception as e:
-        logger.error(f"❌ Fatal error: {e}", exc_info=True)
+        logger.error(f"[ERROR] Fatal error: {e}", exc_info=True)
         sys.exit(1)
 
 
