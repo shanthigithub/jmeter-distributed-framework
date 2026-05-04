@@ -29,7 +29,7 @@ def inject_partitioning(jmx_file, container_id, total_containers):
         tree = ET.parse(jmx_file)
         root = tree.getroot()
     except Exception as e:
-        print(f"❌ Error parsing JMX file: {e}")
+        print(f"[ERROR] Error parsing JMX file: {e}")
         sys.exit(1)
     
     # Find all CSVDataSet elements (try with and without namespace)
@@ -39,11 +39,11 @@ def inject_partitioning(jmx_file, container_id, total_containers):
             csv_configs.append(elem)
     
     if not csv_configs:
-        print("ℹ️  No CSV Data Set configs found in JMX file")
+        print("[INFO] No CSV Data Set configs found in JMX file")
         print(f"{'='*70}\n")
         return
     
-    print(f"📊 Found {len(csv_configs)} CSV Data Set config(s)\n")
+    print(f"[INFO] Found {len(csv_configs)} CSV Data Set config(s)\n")
     
     modified_count = 0
     for i, csv_config in enumerate(csv_configs, 1):
@@ -68,7 +68,7 @@ def inject_partitioning(jmx_file, container_id, total_containers):
         increment.set('name', 'increment')
         increment.text = str(total_containers)
         
-        print(f"🔀 {csv_name}")
+        print(f"[PARTITION] {csv_name}")
         print(f"   File: {filename}")
         print(f"   → offset={container_id}, increment={total_containers}")
         print(f"   (Container {container_id} will read rows {container_id}, {container_id + total_containers}, {container_id + 2*total_containers}, ...)\n")
@@ -79,10 +79,10 @@ def inject_partitioning(jmx_file, container_id, total_containers):
     try:
         tree.write(jmx_file, encoding='UTF-8', xml_declaration=True)
         print(f"{'='*70}")
-        print(f"✅ Successfully injected partitioning into {modified_count} CSV config(s)")
+        print(f"[SUCCESS] Successfully injected partitioning into {modified_count} CSV config(s)")
         print(f"{'='*70}\n")
     except Exception as e:
-        print(f"❌ Error writing JMX file: {e}")
+        print(f"[ERROR] Error writing JMX file: {e}")
         sys.exit(1)
 
 if __name__ == '__main__':
@@ -97,7 +97,7 @@ if __name__ == '__main__':
     total_containers = int(sys.argv[3])
     
     if not os.path.exists(jmx_file):
-        print(f"❌ File not found: {jmx_file}")
+        print(f"[ERROR] File not found: {jmx_file}")
         sys.exit(1)
     
     inject_partitioning(jmx_file, container_id, total_containers)

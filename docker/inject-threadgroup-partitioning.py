@@ -37,7 +37,7 @@ def inject_threadgroup_partitioning(jmx_file, container_id, total_containers):
         tree = ET.parse(jmx_file)
         root = tree.getroot()
     except Exception as e:
-        print(f"❌ Error parsing JMX file: {e}")
+        print(f"[ERROR] Error parsing JMX file: {e}")
         sys.exit(1)
     
     # Find all ThreadGroup elements
@@ -55,11 +55,11 @@ def inject_threadgroup_partitioning(jmx_file, container_id, total_containers):
                 thread_groups.append(elem)
     
     if not thread_groups:
-        print("ℹ️  No ThreadGroup elements found in JMX file")
+        print("[INFO] No ThreadGroup elements found in JMX file")
         print(f"{'='*70}\n")
         return
     
-    print(f"📊 Found {len(thread_groups)} ThreadGroup element(s)\n")
+    print(f"[INFO] Found {len(thread_groups)} ThreadGroup element(s)\n")
     
     modified_count = 0
     for i, thread_group in enumerate(thread_groups, 1):
@@ -69,7 +69,7 @@ def inject_threadgroup_partitioning(jmx_file, container_id, total_containers):
         original_threads = get_thread_count(thread_group)
         
         if original_threads <= 0:
-            print(f"  ⚠️  {tg_name}: Invalid thread count ({original_threads}), skipping")
+            print(f"  [WARNING] {tg_name}: Invalid thread count ({original_threads}), skipping")
             continue
         
         # Calculate threads for this container
@@ -81,13 +81,13 @@ def inject_threadgroup_partitioning(jmx_file, container_id, total_containers):
         threads_for_this_container = end_thread - start_thread
         
         if threads_for_this_container <= 0:
-            print(f"  ⏭️  {tg_name}: No threads assigned to container {container_id + 1}")
+            print(f"  [SKIP] {tg_name}: No threads assigned to container {container_id + 1}")
             threads_for_this_container = 0
         
         # Update thread count
         set_thread_count(thread_group, threads_for_this_container)
         
-        print(f"  ✅ {tg_name}:")
+        print(f"  [SUCCESS] {tg_name}:")
         print(f"     Original threads: {original_threads}")
         print(f"     Threads per container: ~{threads_per_container}")
         print(f"     This container ({container_id + 1}): {threads_for_this_container} threads")
@@ -99,10 +99,10 @@ def inject_threadgroup_partitioning(jmx_file, container_id, total_containers):
     # Save modified JMX
     try:
         tree.write(jmx_file, encoding='utf-8', xml_declaration=True)
-        print(f"✅ Modified {modified_count} ThreadGroup(s)")
-        print(f"💾 Saved to: {jmx_file}")
+        print(f"[SUCCESS] Modified {modified_count} ThreadGroup(s)")
+        print(f"[SAVE] Saved to: {jmx_file}")
     except Exception as e:
-        print(f"❌ Error saving JMX file: {e}")
+        print(f"[ERROR] Error saving JMX file: {e}")
         sys.exit(1)
     
     print(f"{'='*70}\n")
