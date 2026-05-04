@@ -50,14 +50,14 @@ def rewrite_jmx_csv_paths(jmx_file, dry_run=False):
     Returns:
         Number of paths replaced
     """
-    print(f"📝 Reading JMX file: {jmx_file}")
+    print(f"[INFO] Reading JMX file: {jmx_file}")
     
     # Parse JMX file
     try:
         tree = ET.parse(jmx_file)
         root = tree.getroot()
     except ET.ParseError as e:
-        print(f"❌ Failed to parse JMX file: {e}")
+        print(f"[ERROR] Failed to parse JMX file: {e}")
         return 0
     
     replacements = 0
@@ -82,7 +82,7 @@ def rewrite_jmx_csv_paths(jmx_file, dry_run=False):
                                 'new': container_path
                             })
                             
-                            print(f"  🔄 Replacing:")
+                            print(f"  [REPLACE] Replacing:")
                             print(f"      FROM: {original_path}")
                             print(f"      TO:   {container_path}")
                             
@@ -93,13 +93,13 @@ def rewrite_jmx_csv_paths(jmx_file, dry_run=False):
     
     # Save modified JMX (if not dry run and changes were made)
     if replacements > 0 and not dry_run:
-        print(f"\n💾 Saving modified JMX file...")
+        print(f"\n[SAVE] Saving modified JMX file...")
         tree.write(jmx_file, encoding='utf-8', xml_declaration=True)
-        print(f"✅ Successfully rewrote {replacements} CSV path(s)")
+        print(f"[SUCCESS] Successfully rewrote {replacements} CSV path(s)")
     elif dry_run and replacements > 0:
-        print(f"\n🔍 DRY RUN: Would rewrite {replacements} CSV path(s)")
+        print(f"\n[DRY RUN] Would rewrite {replacements} CSV path(s)")
     else:
-        print(f"\nℹ️  No CSV paths needed to be rewritten")
+        print(f"\n[INFO] No CSV paths needed to be rewritten")
     
     return replacements
 
@@ -116,14 +116,14 @@ def main():
     dry_run = '--dry-run' in sys.argv
     
     if not os.path.exists(jmx_file):
-        print(f"❌ File not found: {jmx_file}")
+        print(f"[ERROR] File not found: {jmx_file}")
         sys.exit(1)
     
     print("=" * 60)
     print("JMX CSV Path Rewriter")
     print("=" * 60)
     if dry_run:
-        print("🔍 DRY RUN MODE - No changes will be made")
+        print("[DRY RUN] No changes will be made")
     print()
     
     replacements = rewrite_jmx_csv_paths(jmx_file, dry_run)
