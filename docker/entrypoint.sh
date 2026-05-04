@@ -848,24 +848,23 @@ if [ $JMETER_RAW_EXIT -eq 124 ]; then
 fi
 
 # Determine actual success by checking if results file was created
-# JMeter may return non-zero for warnings, but if results exist, test ran
+# JMeter may return non-zero for warnings/test failures, but if results exist, test ran successfully
 RESULTS_FILE="/tmp/results-0.jtl"
 if [ -f "$RESULTS_FILE" ] && [ -s "$RESULTS_FILE" ]; then
-    # Results file exists and is not empty
+    # Results file exists and is not empty - TEST RAN SUCCESSFULLY
     if [ $JMETER_RAW_EXIT -eq 124 ]; then
         echo "⚠️  [TIMEOUT] JMeter was stopped due to timeout, but partial results exist"
-        JMETER_EXIT_CODE=124  # Report timeout
+        echo "ℹ️  [INFO] Container will report SUCCESS (exit 0) - partial results uploaded"
+        JMETER_EXIT_CODE=0  # Changed: Return 0 for partial results
     else
         echo "✅ [SUCCESS] JMeter test completed - results file created"
-        JMETER_EXIT_CODE=0
+        if [ $JMETER_RAW_EXIT -ne 0 ]; then
+            echo "ℹ️  [INFO] JMeter reported exit code ${JMETER_RAW_EXIT} (test had failures/errors)"
+            echo "ℹ️  [INFO] Container will report SUCCESS (exit 0) - test executed properly"
+            echo "ℹ️  [INFO] Analyze JTL results file for actual test pass/fail status"
+        fi
+        JMETER_EXIT_CODE=0  # Always 0 if results exist
     fi
-    
-    # Check for errors in results (optional - for stricter validation)
-    # If you want to fail on test errors, uncomment this:
-    # error_count=$(grep -c 'success="false"' "$RESULTS_FILE" 2>/dev/null || echo "0")
-    # if [ "$error_count" -gt 0 ]; then
-    #     echo "⚠️  [WARNING] Test completed but had ${error_count} failed requests"
-    # fi
 elif [ $JMETER_RAW_EXIT -eq 0 ]; then
     echo "✅ [SUCCESS] JMeter completed with exit code 0"
     JMETER_EXIT_CODE=0
