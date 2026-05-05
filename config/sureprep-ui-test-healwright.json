@@ -1,0 +1,10 @@
+{
+  "testSuite": [
+    {
+      "testId": "sureprep-ui-approval",
+      "testType": "browser",
+      "testScript": "tests/sureprep-ui-approval-test-with-healwright.js",
+      "execute": true
+    }
+  ]
+}
