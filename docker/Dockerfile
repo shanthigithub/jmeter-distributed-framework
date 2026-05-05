@@ -263,8 +263,8 @@ RUN chmod +x /entrypoint.sh
 # Set working directory
 WORKDIR /jmeter
 
-# Health check (for ECS, though not strictly needed for Batch)
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD pgrep -f jmeter || exit 1
+# Note: HEALTHCHECK removed - it was killing containers after JMeter finished
+# but before entrypoint.sh could complete cleanup and exit properly.
+# ECS Fargate tasks that run to completion don't need healthchecks.
 
 ENTRYPOINT ["/entrypoint.sh"]
