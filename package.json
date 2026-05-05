@@ -1,0 +1,22 @@
+{
+  "name": "jmeter-batch-framework",
+  "version": "1.0.0",
+  "description": "JMeter batch testing framework with Playwright support",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "jmeter",
+    "playwright",
+    "testing",
+    "performance"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "playwright": "^1.40.0",
+    "@aws-sdk/client-s3": "^3.0.0",
+    "healwright": "^1.7.0"
+  }
+}

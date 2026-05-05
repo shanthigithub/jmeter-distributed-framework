@@ -236,7 +236,8 @@ COPY lib /jmeter/lib
 RUN cd /jmeter && npm init -y \
     && npm install playwright@1.40.0 \
     && npm install @aws-sdk/client-s3 \
-    && echo "✅ Playwright installed locally in /jmeter for test scripts"
+    && echo "✅ Playwright installed locally in /jmeter for test scripts" \
+    && echo "✅ Custom self-healing locators available via lib/self-healing-locators.js"
 
 # Copy Java/TestNG framework files  
 COPY java/pom.xml /jmeter/java/pom.xml
