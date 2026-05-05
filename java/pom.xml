@@ -6,58 +6,42 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.testframework</groupId>
-    <artifactId>testng-healenium-framework</artifactId>
+    <artifactId>jmeter-healenium-framework</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
-    <name>TestNG Healenium Framework</name>
-    <description>Generic TestNG + Healenium Performance Testing Framework</description>
+    <name>JMeter Healenium Framework</name>
+    <description>JMeter JSR223 + Healenium Self-Healing Framework</description>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <testng.version>7.8.0</testng.version>
         <selenium.version>4.15.0</selenium.version>
         <healenium.version>3.4.5</healenium.version>
         <webdrivermanager.version>5.6.2</webdrivermanager.version>
-        <allure.version>2.24.0</allure.version>
     </properties>
 
     <dependencies>
-        <!-- TestNG -->
-        <dependency>
-            <groupId>org.testng</groupId>
-            <artifactId>testng</artifactId>
-            <version>${testng.version}</version>
-        </dependency>
-
-        <!-- Selenium WebDriver -->
+        <!-- Selenium WebDriver (Required for JSR223 + Healenium) -->
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
             <version>${selenium.version}</version>
         </dependency>
 
-        <!-- WebDriverManager (manages Chrome/Firefox drivers) -->
+        <!-- WebDriverManager (manages Chrome/Firefox drivers for JSR223) -->
         <dependency>
             <groupId>io.github.bonigarcia</groupId>
             <artifactId>webdrivermanager</artifactId>
             <version>${webdrivermanager.version}</version>
         </dependency>
 
-        <!-- Healenium - Self-Healing Selenium -->
+        <!-- Healenium - Self-Healing Selenium (for JSR223 samplers) -->
         <dependency>
             <groupId>com.epam.healenium</groupId>
             <artifactId>healenium-web</artifactId>
             <version>${healenium.version}</version>
-        </dependency>
-
-        <!-- Allure Reporting -->
-        <dependency>
-            <groupId>io.qameta.allure</groupId>
-            <artifactId>allure-testng</artifactId>
-            <version>${allure.version}</version>
         </dependency>
 
         <!-- SLF4J Logging -->
@@ -79,46 +63,6 @@
                     <source>17</source>
                     <target>17</target>
                 </configuration>
-            </plugin>
-
-            <!-- Maven Surefire Plugin (runs TestNG tests) -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0</version>
-                <configuration>
-                    <suiteXmlFiles>
-                        <suiteXmlFile>testng.xml</suiteXmlFile>
-                    </suiteXmlFiles>
-                    <!-- Parallel execution config -->
-                    <parallel>${parallel}</parallel>
-                    <threadCount>${threadCount}</threadCount>
-                    <useUnlimitedThreads>false</useUnlimitedThreads>
-                    <!-- System properties for tests -->
-                    <systemPropertyVariables>
-                        <healenium.server.url>${healenium.server.url}</healenium.server.url>
-                        <consumer.key>${consumer.key}</consumer.key>
-                        <username>${username}</username>
-                        <login.url>${login.url}</login.url>
-                        <parallel.users>${parallel.users}</parallel.users>
-                        <iterations>${iterations}</iterations>
-                    </systemPropertyVariables>
-                </configuration>
-                <dependencies>
-                    <!-- Explicitly add TestNG dependency to Surefire -->
-                    <dependency>
-                        <groupId>org.apache.maven.surefire</groupId>
-                        <artifactId>surefire-testng</artifactId>
-                        <version>3.0.0</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-
-            <!-- Allure Maven Plugin -->
-            <plugin>
-                <groupId>io.qameta.allure</groupId>
-                <artifactId>allure-maven</artifactId>
-                <version>2.12.0</version>
             </plugin>
         </plugins>
     </build>
