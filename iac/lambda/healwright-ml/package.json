@@ -1,0 +1,22 @@
+{
+  "name": "healwright-ml-dynamo",
+  "version": "2.0.0",
+  "description": "Cost-optimized Healwright ML Backend with DynamoDB",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "healwright",
+    "playwright",
+    "self-healing",
+    "test-automation",
+    "dynamodb"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.600.0",
+    "@aws-sdk/lib-dynamodb": "^3.600.0"
+  }
+}
