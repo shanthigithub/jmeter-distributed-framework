@@ -184,6 +184,39 @@ class SelfHealingHelper {
     }
     
     /**
+     * Switch to iframe for self-healing iframe interactions
+     * @param frameLocator XPath, CSS, index, or WebElement
+     * @return IframeSelfHealingHelper for chained iframe operations
+     */
+    IframeSelfHealingHelper switchToFrame(Object frameLocator) {
+        try {
+            if (frameLocator instanceof Integer) {
+                driver.switchTo().frame((Integer) frameLocator)
+            } else if (frameLocator instanceof WebElement) {
+                driver.switchTo().frame((WebElement) frameLocator)
+            } else if (frameLocator instanceof String) {
+                By by = parseLocator((String) frameLocator)
+                WebElement frameElement = driver.findElement(by)
+                driver.switchTo().frame(frameElement)
+            }
+            
+            println("✅ Switched to iframe")
+            return new IframeSelfHealingHelper(this)
+        } catch (Exception e) {
+            println("❌ Failed to switch to iframe: ${e.message}")
+            throw e
+        }
+    }
+    
+    /**
+     * Switch back to default content (exit iframe)
+     */
+    void switchToDefaultContent() {
+        driver.switchTo().defaultContent()
+        println("✅ Switched back to main page")
+    }
+    
+    /**
      * Get healing statistics with performance metrics
      */
     Map<String, Object> getStats() {
@@ -256,5 +289,67 @@ class SelfHealingHelper {
             // Default to CSS selector
             return By.cssSelector(locator)
         }
+    }
+}
+
+/**
+ * Helper class for iframe interactions with self-healing
+ * Maintains reference to parent helper for statistics sharing
+ */
+class IframeSelfHealingHelper {
+    private SelfHealingHelper parent
+    
+    IframeSelfHealingHelper(SelfHealingHelper parent) {
+        this.parent = parent
+    }
+    
+    /**
+     * Click element inside iframe with self-healing
+     */
+    void click(String locator) {
+        parent.click(locator)
+    }
+    
+    /**
+     * Fill input inside iframe with self-healing
+     */
+    void fill(String locator, String text) {
+        parent.fill(locator, text)
+    }
+    
+    /**
+     * Wait for element inside iframe with self-healing
+     */
+    void waitFor(String locator, int timeoutSeconds = 30) {
+        parent.waitFor(locator, timeoutSeconds)
+    }
+    
+    /**
+     * Find element inside iframe with self-healing
+     */
+    WebElement findElement(String locator) {
+        return parent.findElement(locator)
+    }
+    
+    /**
+     * Execute JavaScript inside iframe
+     */
+    Object executeScript(String script, Object... args) {
+        return parent.executeScript(script, args)
+    }
+    
+    /**
+     * Switch to nested iframe
+     */
+    IframeSelfHealingHelper switchToFrame(Object frameLocator) {
+        return parent.switchToFrame(frameLocator)
+    }
+    
+    /**
+     * Exit current iframe and return to parent
+     */
+    SelfHealingHelper exitFrame() {
+        parent.switchToDefaultContent()
+        return parent
     }
 }
