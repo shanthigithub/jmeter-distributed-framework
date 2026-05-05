@@ -3,7 +3,7 @@
     {
       "testId": "sureprep-ui-approval",
       "testType": "browser",
-      "testScript": "tests/sureprep-ui-approval-test.js",
+      "testScript": "tests/Sureprep_UI_Approval_AprRelease_27Mar_Headless_Chrome_V1.jmx",
       "execute": true
     }
   ]
