@@ -1,0 +1,142 @@
+name: Deploy Healwright ML Backend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'iac/lib/healwright-stack.ts'
+      - 'iac/lambda/healwright-ml/**'
+      - '.github/workflows/deploy-healwright.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'iac/lib/healwright-stack.ts'
+      - 'iac/lambda/healwright-ml/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy (dev, prod)'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - prod
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  deploy-healwright:
+    name: Deploy Healwright ML Backend
+    runs-on: ubuntu-latest
+    
+    permissions:
+      id-token: write  # Required for OIDC
+      contents: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: iac/package-lock.json
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Install CDK dependencies
+        run: |
+          cd iac
+          npm ci
+      
+      - name: Install Lambda dependencies
+        run: |
+          cd iac/lambda/healwright-ml
+          npm ci
+      
+      - name: CDK Synth (Healwright Stack Only)
+        run: |
+          cd iac
+          npx cdk synth ${{ github.event.inputs.environment || 'dev' }}-healwright
+      
+      - name: CDK Deploy (Healwright Stack Only)
+        run: |
+          cd iac
+          npx cdk deploy ${{ github.event.inputs.environment || 'dev' }}-healwright --require-approval never
+      
+      - name: Get Stack Outputs
+        id: outputs
+        run: |
+          STACK_NAME="${{ github.event.inputs.environment || 'dev' }}-healwright"
+          
+          API_URL=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME \
+            --query 'Stacks[0].Outputs[?OutputKey==`HealwrightApiUrl`].OutputValue' \
+            --output text 2>/dev/null || echo "Not deployed yet")
+          
+          TABLE_NAME=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME \
+            --query 'Stacks[0].Outputs[?OutputKey==`HealingDataTableName`].OutputValue' \
+            --output text 2>/dev/null || echo "Not deployed yet")
+          
+          echo "api_url=$API_URL" >> $GITHUB_OUTPUT
+          echo "table_name=$TABLE_NAME" >> $GITHUB_OUTPUT
+          
+          echo "✅ Healwright ML Backend deployed!"
+          echo "🤖 API URL: $API_URL"
+          echo "📊 DynamoDB Table: $TABLE_NAME"
+          echo ""
+          echo "💰 Cost Estimate: $10-15/month (DynamoDB on-demand + Lambda)"
+          echo ""
+          echo "📝 Next steps:"
+          echo "1. Update healwright.config.js with API URL: $API_URL"
+          echo "2. Run your Playwright tests with ML-powered self-healing"
+      
+      - name: Create deployment summary
+        run: |
+          cat << EOF >> $GITHUB_STEP_SUMMARY
+          ## 🎉 Healwright ML Backend Deployed Successfully
+          
+          ### Stack Information
+          - **Environment**: ${{ github.event.inputs.environment || 'dev' }}
+          - **Stack Name**: ${{ github.event.inputs.environment || 'dev' }}-healwright
+          - **Region**: ${{ env.AWS_REGION }}
+          
+          ### Outputs
+          - **API URL**: \`${{ steps.outputs.outputs.api_url }}\`
+          - **DynamoDB Table**: \`${{ steps.outputs.outputs.table_name }}\`
+          
+          ### Cost Information
+          - **Monthly Estimate**: $10-15 USD
+          - **Pricing Model**: Pay-per-use (DynamoDB on-demand + Lambda)
+          - **Scales to $0**: When not running tests
+          
+          ### Next Steps
+          1. Update \`healwright.config.js\`:
+             \`\`\`javascript
+             module.exports = {
+               mlBackendUrl: '${{ steps.outputs.outputs.api_url }}',
+               mode: 'hybrid'  // ML + client-side fallback
+             };
+             \`\`\`
+          
+          2. Run your Playwright tests:
+             \`\`\`bash
+             npm install
+             node tests/sureprep-ui-approval-test-with-healwright.js
+             \`\`\`
+          
+          ### Features
+          - ✅ ML-powered element locator healing
+          - ✅ Learns patterns across all test runs
+          - ✅ Client-side fallback for resilience
+          - ✅ Cost-optimized serverless architecture
+          EOF
