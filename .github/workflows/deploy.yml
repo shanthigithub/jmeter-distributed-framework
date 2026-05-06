@@ -165,7 +165,7 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           cd iac
-          npx cdk deploy --require-approval never
+          npx cdk deploy --all --require-approval never
       
       - name: Get Stack Outputs
         id: outputs
