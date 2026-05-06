@@ -231,6 +231,9 @@ RUN mkdir -p /jmeter /jmeter/scripts /jmeter/data /jmeter/results
 # These are used by Playwright JS tests via require('../lib/test-runner')
 COPY lib /jmeter/lib
 
+# Copy Healwright configuration (needed by smart-healer.js)
+COPY healwright.config.js /jmeter/healwright.config.js
+
 # Install Playwright and dependencies locally in /jmeter for test scripts
 # Global install above is for CLI commands, local install is for require()
 RUN cd /jmeter && npm init -y \
