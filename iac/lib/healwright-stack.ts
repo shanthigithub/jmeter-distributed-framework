@@ -135,7 +135,7 @@ export class HealwrightStack extends cdk.Stack {
     // API endpoints
     const heal = api.root.addResource('heal');
     heal.addMethod('POST', lambdaIntegration);
-    heal.addMethod('OPTIONS', lambdaIntegration);
+    // OPTIONS is automatically added by defaultCorsPreflightOptions
 
     const health = api.root.addResource('health');
     health.addMethod('GET', lambdaIntegration);
