@@ -36,8 +36,8 @@ module.exports = {
   
   // ML backend configuration (used in 'ml' or 'hybrid' modes)
   ml: {
-    // ML backend server URL
-    serverUrl: process.env.HEALWRIGHT_ML_URL || 'http://healwright-backend:3000',
+    // ML backend server URL - AWS API Gateway endpoint
+    serverUrl: process.env.HEALWRIGHT_ML_URL || 'https://grdh2us4ge.execute-api.us-east-1.amazonaws.com/dev/heal',
     
     // API key for authentication (if required)
     apiKey: process.env.HEALWRIGHT_API_KEY,
