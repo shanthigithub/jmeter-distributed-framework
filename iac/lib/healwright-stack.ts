@@ -115,9 +115,8 @@ export class HealwrightStack extends cdk.Stack {
         stageName: envName,
         throttlingBurstLimit: 50, // Reduced from 100
         throttlingRateLimit: 25,  // Reduced from 50
-        loggingLevel: apigateway.MethodLoggingLevel.INFO,
-        dataTraceEnabled: envName !== 'prod',
         metricsEnabled: true
+        // Logging disabled - requires CloudWatch Logs role setup at AWS account level
       },
       defaultCorsPreflightOptions: {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
