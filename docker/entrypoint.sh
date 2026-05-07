@@ -890,16 +890,48 @@ echo ""
 uploaded_count=0
 failed_count=0
 
+# Debug: Check if screenshots directory exists and list files
+echo "[DEBUG] Checking for screenshots..."
+if [ -d "/tmp/screenshots" ]; then
+    screenshot_count=$(find /tmp/screenshots -name "*.png" | wc -l)
+    echo "   Found screenshots directory with ${screenshot_count} PNG files"
+    if [ $screenshot_count -gt 0 ]; then
+        echo "   Screenshot files:"
+        find /tmp/screenshots -name "*.png" -exec ls -lh {} \;
+    fi
+else
+    echo "    Screenshots directory not found: /tmp/screenshots"
+fi
+echo ""
+
 # Upload all result files including screenshots
-for file in /tmp/*.jtl /tmp/*.log /tmp/*.csv /tmp/*.png /tmp/screenshots/*.png /jmeter/results/*.png; do
+# Process screenshots first to ensure they're uploaded
+if [ -d "/tmp/screenshots" ]; then
+    echo "[UPLOAD] Processing screenshots from /tmp/screenshots..."
+    find /tmp/screenshots -name "*.png" | while read -r screenshot_file; do
+        if [ -f "$screenshot_file" ]; then
+            filename=$(basename "$screenshot_file")
+            s3_key="${RESULTS_PREFIX}/container-${CONTAINER_ID}/screenshots/${filename}"
+            
+            echo "  [SCREENSHOT] Uploading: ${filename}"
+            if upload_results "$screenshot_file" "$s3_key"; then
+                ((uploaded_count++))
+                echo "     Uploaded to: s3://${RESULTS_BUCKET}/${s3_key}"
+            else
+                ((failed_count++))
+                echo "     Failed to upload screenshot"
+            fi
+        fi
+    done
+    echo ""
+fi
+
+# Upload other result files
+echo "[UPLOAD] Processing other result files..."
+for file in /tmp/*.jtl /tmp/*.log /tmp/*.csv /tmp/*.xml /tmp/*.png /jmeter/results/*.png; do
     if [ -f "$file" ]; then
         filename=$(basename "$file")
-        # Upload to container-specific folder (screenshots go to screenshots/ subfolder)
-        if [[ "$file" == /tmp/screenshots/* ]]; then
-            s3_key="${RESULTS_PREFIX}/container-${CONTAINER_ID}/screenshots/${filename}"
-        else
-            s3_key="${RESULTS_PREFIX}/container-${CONTAINER_ID}/${filename}"
-        fi
+        s3_key="${RESULTS_PREFIX}/container-${CONTAINER_ID}/${filename}"
         
         if upload_results "$file" "$s3_key"; then
             ((uploaded_count++))
