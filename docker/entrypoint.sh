@@ -891,11 +891,15 @@ uploaded_count=0
 failed_count=0
 
 # Upload all result files including screenshots
-for file in /tmp/*.jtl /tmp/*.log /tmp/*.csv /tmp/*.png /jmeter/results/*.png; do
+for file in /tmp/*.jtl /tmp/*.log /tmp/*.csv /tmp/*.png /tmp/screenshots/*.png /jmeter/results/*.png; do
     if [ -f "$file" ]; then
         filename=$(basename "$file")
-        # Upload to container-specific folder
-        s3_key="${RESULTS_PREFIX}/container-${CONTAINER_ID}/${filename}"
+        # Upload to container-specific folder (screenshots go to screenshots/ subfolder)
+        if [[ "$file" == /tmp/screenshots/* ]]; then
+            s3_key="${RESULTS_PREFIX}/container-${CONTAINER_ID}/screenshots/${filename}"
+        else
+            s3_key="${RESULTS_PREFIX}/container-${CONTAINER_ID}/${filename}"
+        fi
         
         if upload_results "$file" "$s3_key"; then
             ((uploaded_count++))
