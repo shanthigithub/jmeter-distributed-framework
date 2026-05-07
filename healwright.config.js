@@ -135,5 +135,29 @@ module.exports = {
     'text',
     'css',
     'xpath'
+  ],
+  
+  // 🆕 AUTO ERROR DETECTION (Framework Feature)
+  // Automatically detect error messages on page when waitFor() times out
+  // This helps provide clear error messages without modifying test code
+  autoErrorDetection: true,
+  
+  // Custom error selectors to check when waitFor() times out
+  // These are checked in order (first match wins)
+  errorSelectors: [
+    // Salesforce-specific error selectors
+    { selector: "//*[contains(@class,'toastMessage') and contains(@class,'error')]", type: 'Error Toast' },
+    { selector: "//*[contains(@class,'slds-notify--alert')]", type: 'Salesforce Alert' },
+    { selector: "//*[contains(@class,'slds-notify') and contains(@class,'error')]", type: 'Salesforce Error' },
+    
+    // Generic error selectors
+    { selector: "//*[contains(@class,'errorMessage')]", type: 'Error Message' },
+    { selector: "//*[contains(@class,'toastError')]", type: 'Toast Error' },
+    { selector: "//*[contains(@class,'validationError')]", type: 'Validation Error' },
+    { selector: "//*[@role='alert' and contains(@class,'error')]", type: 'Alert Error' },
+    { selector: "//div[contains(@class,'messageText') and contains(@class,'error')]", type: 'Message Error' },
+    
+    // Generic alerts (last resort)
+    { selector: "//*[@role='alert']", type: 'Alert' }
   ]
 };
