@@ -928,16 +928,25 @@ fi
 
 # Upload other result files
 echo "[UPLOAD] Processing other result files..."
+echo "[DEBUG] Checking for files matching patterns..."
+echo "[DEBUG] Files in /tmp:"
+ls -lah /tmp/*.jtl /tmp/*.log 2>&1 | head -20
+
 for file in /tmp/*.jtl /tmp/*.log /tmp/*.csv /tmp/*.xml /tmp/*.png /jmeter/results/*.png; do
     if [ -f "$file" ]; then
         filename=$(basename "$file")
         s3_key="${RESULTS_PREFIX}/container-${CONTAINER_ID}/${filename}"
         
+        echo "  [UPLOAD] ${file}"
         if upload_results "$file" "$s3_key"; then
             ((uploaded_count++))
+            echo "   [SUCCESS] Uploaded to: s3://${RESULTS_BUCKET}/${s3_key}"
         else
             ((failed_count++))
+            echo "    [FAILED] Could not upload: ${file}"
         fi
+    else
+        echo "  [SKIP] File not found or not a regular file: ${file}"
     fi
 done
 
