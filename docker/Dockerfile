@@ -234,6 +234,8 @@ COPY lib /jmeter/lib
 # Copy Healwright configuration (needed by smart-healer.js)
 COPY healwright.config.js /jmeter/healwright.config.js
 
+# Force rebuild to include lib/implicit-wait-healer.js (commit 35fb9602)
+
 # Install Playwright and dependencies locally in /jmeter for test scripts
 # Global install above is for CLI commands, local install is for require()
 RUN cd /jmeter && npm init -y \
