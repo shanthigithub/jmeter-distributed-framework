@@ -260,14 +260,14 @@ RUN cd /jmeter/java \
     && echo "   Tests downloaded from S3 will use cached dependencies" \
     && ls -lh /root/.m2/repository/ | head -20
 
-# Copy Maven dependencies to JMeter lib for JSR223 Groovy scripts
-# This makes Healenium, Selenium, WebDriverManager available to JSR223 samplers
-RUN cd /jmeter/java \
-    && echo "📦 Copying Maven dependencies to JMeter lib..." \
-    && mvn dependency:copy-dependencies -DoutputDirectory=/opt/jmeter/lib/ext -B \
-    && echo "✅ Healenium + Selenium JARs now available for JSR223 samplers" \
-    && ls -lh /opt/jmeter/lib/ext/*.jar | wc -l \
-    && echo "   JARs copied to /opt/jmeter/lib/ext"
+# Copy ONLY essential Healenium/WebDriverManager JARs for JSR223 (avoid conflicts)
+# Note: Selenium JARs already installed in /opt/jmeter/lib (lines 126-176)
+RUN cd /root/.m2/repository \
+    && echo "📦 Copying essential Healenium JARs to JMeter lib..." \
+    && cp -v com/epam/healenium/healenium-web/3.4.5/*.jar /opt/jmeter/lib/ext/ 2>/dev/null || true \
+    && cp -v io/github/bonigarcia/webdrivermanager/5.6.2/*.jar /opt/jmeter/lib/ext/ 2>/dev/null || true \
+    && echo "✅ Healenium + WebDriverManager available for JSR223 samplers" \
+    && echo "   Note: Selenium JARs already present in /opt/jmeter/lib"
 
 # Copy entrypoint script
 COPY docker/entrypoint.sh /entrypoint.sh
