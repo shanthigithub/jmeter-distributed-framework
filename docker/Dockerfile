@@ -264,12 +264,12 @@ RUN cd /jmeter/java \
 # Note: Selenium JARs already installed in /opt/jmeter/lib (lines 126-176)
 RUN cd /root/.m2/repository \
     && echo "📦 Copying essential Healenium JARs to JMeter lib..." \
-    && cp -v com/epam/healenium/healenium-web/3.4.5/*.jar /opt/jmeter/lib/ext/ 2>/dev/null || true \
+    && find com/epam/healenium -name "*.jar" -path "*/3.4.5/*" -exec cp -v {} /opt/jmeter/lib/ext/ \; 2>/dev/null || true \
     && cp -v io/github/bonigarcia/webdrivermanager/5.6.2/*.jar /opt/jmeter/lib/ext/ 2>/dev/null || true \
     && cp -v org/apache/commons/commons-compress/*/commons-compress-*.jar /opt/jmeter/lib/ext/ 2>/dev/null || true \
     && cp -v com/google/code/gson/gson/*/gson-*.jar /opt/jmeter/lib/ext/ 2>/dev/null || true \
     && cp -v com/typesafe/config/*/config-*.jar /opt/jmeter/lib/ext/ 2>/dev/null || true \
-    && echo "✅ Healenium + WebDriverManager + dependencies available for JSR223 samplers" \
+    && echo "✅ All Healenium 3.4.5 JARs + WebDriverManager + dependencies available for JSR223 samplers" \
     && echo "   Note: Selenium JARs already present in /opt/jmeter/lib"
 
 # Copy entrypoint script
