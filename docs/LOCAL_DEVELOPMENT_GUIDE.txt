@@ -1,0 +1,440 @@
+================================================================================
+LOCAL DEVELOPMENT GUIDE FOR HEALWRIGHT PLAYWRIGHT SCRIPTS
+================================================================================
+
+This guide shows testers how to develop and test Playwright scripts with 
+Healwright on their laptops before deploying to the framework.
+
+================================================================================
+PREREQUISITES
+================================================================================
+
+1. Node.js and npm installed
+   - Download from: https://nodejs.org/
+   - Minimum version: Node.js 18+ (recommended: LTS version)
+   - Verify installation:
+     node --version
+     npm --version
+
+2. Git (to clone the repository)
+   - Windows: Download from https://git-scm.com/
+   - Verify: git --version
+
+3. Visual Studio Code (recommended editor)
+   - Download from: https://code.visualstudio.com/
+
+================================================================================
+STEP 1: CLONE THE REPOSITORY
+================================================================================
+
+# Clone the repository to your laptop
+git clone https://github.com/shanthigithub/jmeter-framework
+cd jmeter-framework
+
+# Or if already cloned, pull latest changes
+git pull origin main
+
+================================================================================
+STEP 2: INSTALL DEPENDENCIES
+================================================================================
+
+# Install all Node.js dependencies including Playwright and Healwright
+npm install
+
+# This installs:
+# - playwright@^1.40.0
+# - healwright@^1.7.0
+# - @aws-sdk/client-s3@^3.0.0 (only needed for S3 uploads)
+
+# Install Playwright browsers (Chrome, Firefox, WebKit)
+npx playwright install
+
+# Or install only Chrome (faster for testing)
+npx playwright install chromium
+
+================================================================================
+STEP 3: VERIFY HEALWRIGHT INSTALLATION
+================================================================================
+
+# Check if healwright is installed correctly
+node -e "console.log(require('healwright'))"
+
+# Should output: [Object object] or similar (not an error)
+
+# Check healwright version
+npm list healwright
+
+# Should show: healwright@1.7.0 or similar
+
+================================================================================
+STEP 4: CREATE YOUR TEST SCRIPT
+================================================================================
+
+Option A: Start from Template (lib/test-template.js)
+-----------------------------------------------------
+1. Copy the template:
+   copy lib\test-template.js tests\my-new-test.js
+
+2. Edit tests\my-new-test.js:
+   - Update config object with your test parameters
+   - Implement your test steps in runUser() function
+   - Use implicitHealer for all actions (includes auto-polling)
+
+Option B: Copy Existing Test
+------------------------------
+1. Copy an existing test as starting point:
+   copy tests\sureprep-ui-approval-test-with-healwright.js tests\my-new-test.js
+
+2. Modify for your test scenario
+
+Option C: Write from Scratch
+------------------------------
+1. Create new file: tests\my-new-test.js
+
+2. Include required imports:
+   const { runParallelTest, timedAction } = require('../lib/test-runner');
+   const { ImplicitWaitHealer } = require('../lib/implicit-wait-healer');
+
+3. Define config object with test parameters
+
+4. Implement runUser() function with test logic
+
+5. Call runParallelTest() in main()
+
+================================================================================
+STEP 5: RUN YOUR TEST LOCALLY
+================================================================================
+
+Basic Execution
+----------------
+# Run with default settings (1 user, 1 iteration)
+node tests/my-new-test.js
+
+With Environment Variables
+---------------------------
+# Windows Command Prompt
+set PARALLEL_USERS=2
+set ITERATIONS=1
+set CONSTANT_TIMER=3000
+node tests/my-new-test.js
+
+# Windows PowerShell
+$env:PARALLEL_USERS=2
+$env:ITERATIONS=1
+$env:CONSTANT_TIMER=3000
+node tests/my-new-test.js
+
+# Linux/Mac (Git Bash on Windows)
+PARALLEL_USERS=2 ITERATIONS=1 CONSTANT_TIMER=3000 node tests/my-new-test.js
+
+One-Liner Execution
+--------------------
+# Windows CMD
+set PARALLEL_USERS=1 && set ITERATIONS=1 && node tests/my-new-test.js
+
+# PowerShell
+$env:PARALLEL_USERS=1; $env:ITERATIONS=1; node tests/my-new-test.js
+
+Run in Headed Mode (See Browser)
+---------------------------------
+1. Edit your test config:
+   browserConfig: { 
+     healerMode: 'hybrid',
+     headless: false  // Add this line
+   }
+
+2. Run the test:
+   node tests/my-new-test.js
+
+3. You'll see the browser window during execution!
+
+================================================================================
+STEP 6: DEBUGGING TIPS
+================================================================================
+
+Enable Verbose Logging
+-----------------------
+1. Add to config:
+   logImplicitWait: true,  // Log polling attempts
+   browserConfig: {
+     healerMode: 'hybrid',
+     headless: false,
+     slowMo: 500  // Slow down actions by 500ms
+   }
+
+2. Add console.log statements:
+   console.log('About to click button...');
+   await implicitHealer.click("//button");
+   console.log('Button clicked successfully');
+
+Use Playwright Inspector
+-------------------------
+# Run with inspector
+PWDEBUG=1 node tests/my-new-test.js
+
+# On Windows CMD
+set PWDEBUG=1
+node tests/my-new-test.js
+
+Take Screenshots on Failure
+-----------------------------
+Add to your catch block:
+  catch (error) {
+    await page.screenshot({ 
+      path: `error-user${userId}-${Date.now()}.png`,
+      fullPage: true 
+    });
+    throw error;
+  }
+
+Check Healing Statistics
+-------------------------
+Add at end of runUser():
+  const stats = implicitHealer.getStats();
+  console.log('Healing Stats:', JSON.stringify(stats, null, 2));
+
+================================================================================
+STEP 7: TESTING CONFIGURATIONS
+================================================================================
+
+Test with Different User Counts
+---------------------------------
+# Single user (development)
+set PARALLEL_USERS=1 && node tests/my-new-test.js
+
+# Multiple users (stress test)
+set PARALLEL_USERS=5 && node tests/my-new-test.js
+
+Test with Different Iterations
+--------------------------------
+# Single iteration
+set ITERATIONS=1 && node tests/my-new-test.js
+
+# Multiple iterations (endurance test)
+set ITERATIONS=10 && node tests/my-new-test.js
+
+Test with Different Timeouts
+------------------------------
+Edit config in your test:
+  explicitWait: 30000,   // 30 seconds (faster for dev)
+  implicitWait: 5000,    // 5 seconds (faster polling)
+  constantTimer: 1000,   // 1 second (faster between steps)
+
+Test Without Healwright (Debug)
+---------------------------------
+Temporarily comment out healer usage:
+  // const implicitHealer = new ImplicitWaitHealer(healer, {...});
+  // await implicitHealer.click("//button");
+  
+  // Use page directly instead
+  await page.click("//button");
+
+================================================================================
+STEP 8: VALIDATE BEFORE S3 UPLOAD
+================================================================================
+
+Pre-Upload Checklist
+---------------------
+□ Test runs successfully locally with PARALLEL_USERS=1
+□ Test runs successfully locally with PARALLEL_USERS=2+
+□ All sensitive data removed or parameterized
+□ Environment variables used for credentials (not hardcoded)
+□ Think times (constantTimer) configured appropriately
+□ Explicit waits set to reasonable values (not too high)
+□ Console.log statements cleaned up (keep only essential ones)
+□ Error handling implemented (try/catch blocks)
+□ Healing statistics logged at end
+□ Script exits cleanly (process.exit with proper code)
+
+Test with Production-Like Settings
+------------------------------------
+# Simulate ECS environment settings
+set PARALLEL_USERS=10
+set ITERATIONS=1
+set RAMP_UP_TIME=60
+set CONSTANT_TIMER=6000
+set EXPLICIT_WAIT=180000
+set IMPLICIT_WAIT=10000
+node tests/my-new-test.js
+
+Verify Performance Metrics
+---------------------------
+Check console output for:
+- Step timings (from timedAction)
+- Healing statistics (ML vs client healing)
+- Success/failure rates
+- Any timeout warnings
+
+================================================================================
+STEP 9: UPLOAD TO S3
+================================================================================
+
+Method 1: AWS CLI (Recommended)
+---------------------------------
+# Install AWS CLI: https://aws.amazon.com/cli/
+
+# Configure credentials
+aws configure
+
+# Upload test script
+aws s3 cp tests/my-new-test.js s3://your-bucket-name/tests/
+
+# Upload with config file
+aws s3 cp config/my-test-config.json s3://your-bucket-name/config/
+
+Method 2: AWS Console
+-----------------------
+1. Login to AWS Console
+2. Navigate to S3 service
+3. Find your bucket
+4. Click "Upload"
+5. Select your test file(s)
+6. Click "Upload"
+
+Method 3: Programmatic Upload
+-------------------------------
+Use the provided upload script (if available):
+  node scripts/upload-test.js tests/my-new-test.js
+
+================================================================================
+STEP 10: RUN IN ECS/FARGATE
+================================================================================
+
+After uploading to S3, trigger execution via:
+
+1. GitHub Actions workflow (.github/workflows/run-test.yml)
+2. AWS Step Functions (if configured)
+3. Manual ECS task launch with environment variables
+
+Monitor execution in:
+- CloudWatch Logs
+- Datadog (if integrated)
+- ECS Task console
+
+================================================================================
+COMMON ISSUES AND SOLUTIONS
+================================================================================
+
+Issue: "Cannot find module 'playwright'"
+Solution: 
+  npm install
+  npx playwright install
+
+Issue: "Cannot find module 'healwright'"
+Solution:
+  npm install healwright@^1.7.0
+
+Issue: "Timeout waiting for element"
+Solution:
+  - Increase explicitWait in config
+  - Enable implicitWait and check polling logs
+  - Run in headed mode to see what's happening
+  - Check if element selector is correct
+
+Issue: "Element not found even with implicit wait"
+Solution:
+  - Verify element exists in page (use browser inspector)
+  - Try different selector (CSS vs XPath)
+  - Check if element is in iframe
+  - Ensure page has fully loaded
+
+Issue: "Test runs locally but fails in ECS"
+Solution:
+  - Check browser binary paths in Docker
+  - Verify environment variables are set in ECS task definition
+  - Check CloudWatch logs for specific errors
+  - Ensure S3 permissions are correct
+
+Issue: "Healing not working"
+Solution:
+  - Check healwright.config.js exists
+  - Verify ML backend is reachable (hybrid mode falls back to client)
+  - Check healing statistics in logs
+  - Ensure selectors are reasonable (not too specific)
+
+================================================================================
+BEST PRACTICES
+================================================================================
+
+1. Version Control
+   - Commit your tests to Git
+   - Use meaningful commit messages
+   - Create branches for new features
+
+2. Code Organization
+   - Keep tests in tests/ directory
+   - Use lib/ for shared utilities
+   - Store configs in config/ directory
+
+3. Naming Conventions
+   - Use descriptive test file names: my-app-login-test.js
+   - Use descriptive step names in timedAction()
+   - Use clear variable names
+
+4. Error Handling
+   - Always use try/catch in runUser()
+   - Log useful error messages
+   - Include context in error logs (userId, step, etc.)
+
+5. Performance
+   - Use implicitHealer for automatic polling
+   - Set reasonable timeouts (not too high)
+   - Use constantTimer for think time between steps
+   - Only measure actual transactions with timedAction()
+
+6. Maintenance
+   - Update dependencies regularly (npm update)
+   - Test after updating Playwright or Healwright
+   - Keep documentation updated
+   - Share learnings with team
+
+================================================================================
+ADDITIONAL RESOURCES
+================================================================================
+
+- Playwright Documentation: https://playwright.dev/
+- Healwright on npm: https://www.npmjs.com/package/healwright
+- Project Repository: https://github.com/shanthigithub/jmeter-framework
+- Framework Documentation: See docs/ directory
+
+================================================================================
+QUICK REFERENCE COMMANDS
+================================================================================
+
+# Setup
+npm install
+npx playwright install chromium
+
+# Run test locally
+node tests/my-new-test.js
+
+# Run with parameters (Windows CMD)
+set PARALLEL_USERS=2 && set ITERATIONS=1 && node tests/my-new-test.js
+
+# Run with parameters (PowerShell)
+$env:PARALLEL_USERS=2; $env:ITERATIONS=1; node tests/my-new-test.js
+
+# Debug mode (headed browser)
+set PWDEBUG=1 && node tests/my-new-test.js
+
+# Upload to S3
+aws s3 cp tests/my-new-test.js s3://bucket-name/tests/
+
+# Check installed packages
+npm list playwright healwright
+
+# Update dependencies
+npm update
+
+================================================================================
+SUPPORT
+================================================================================
+
+For questions or issues:
+1. Check this guide first
+2. Review example tests in tests/ directory
+3. Check CloudWatch logs if running in ECS
+4. Contact framework maintainers
+
+Happy testing! 🚀
+================================================================================
