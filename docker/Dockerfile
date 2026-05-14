@@ -267,6 +267,7 @@ RUN cd /root/.m2/repository \
     && cp -v com/epam/healenium/healenium-web/3.4.5/*.jar /opt/jmeter/lib/ext/ 2>/dev/null || true \
     && cp -v io/github/bonigarcia/webdrivermanager/5.6.2/*.jar /opt/jmeter/lib/ext/ 2>/dev/null || true \
     && cp -v org/apache/commons/commons-compress/*/commons-compress-*.jar /opt/jmeter/lib/ext/ 2>/dev/null || true \
+    && cp -v com/google/code/gson/gson/*/gson-*.jar /opt/jmeter/lib/ext/ 2>/dev/null || true \
     && echo "✅ Healenium + WebDriverManager + dependencies available for JSR223 samplers" \
     && echo "   Note: Selenium JARs already present in /opt/jmeter/lib"
 
