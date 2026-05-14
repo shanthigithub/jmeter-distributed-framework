@@ -1,0 +1,7 @@
+aws: [ERROR]: 'charmap' codec can't encode character '\u2192' in position 23: character maps to <undefined>
+2026-05-04T17:27:26    [SUCCESS] Downloaded 252371 bytes to: /tmp/test.jmx
+2026-05-04T17:27:28    [SUCCESS] Downloaded 114 bytes to: /tmp/SSP_API_Test_Data_3.csv
+2026-05-04T17:27:28   [SUCCESS] UM Add Product User Medium_2:
+2026-05-04T17:27:28 [SUCCESS] Modified 1 ThreadGroup(s)
+2026-05-04T17:27:28   Adding offset/increment for distributed data access
+2026-05-04T17:27:28 [PARTITION] CSV Data Set Config

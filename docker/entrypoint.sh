@@ -1,8 +1,6 @@
 #!/bin/bash
 set -e  # Exit on error (removed -x diagnostic logging)
 
-# TestNG framework support added
-
 echo "=========================================="
 echo "JMeter Batch Framework Container"
 echo "=========================================="
@@ -255,16 +253,12 @@ elif [ "$FILE_EXTENSION" = "py" ]; then
     TEST_FILE="/tmp/test.py"
 elif [ "$FILE_EXTENSION" = "js" ]; then
     TEST_FILE="/tmp/test.js"
-elif [ "$FILE_EXTENSION" = "java" ]; then
-    echo "[INFO] Test script type: Java/TestNG (Selenium + Healenium)"
-    TEST_FILE="/tmp/test.java"
 else
     echo " [ERROR] Unsupported file extension: .${FILE_EXTENSION}"
     echo "   Supported extensions:"
-    echo "   - .jmx  (JMeter - API tests, JSR223 browser tests)"
+    echo "   - .jmx  (JMeter - API tests, JSR223 browser tests with Healenium)"
     echo "   - .py   (Python Playwright - browser tests)"
-    echo "   - .js   (JavaScript Playwright - k6-ready browser tests)"
-    echo "   - .java (Java/TestNG - Selenium with Healenium self-healing)"
+    echo "   - .js   (JavaScript Playwright - k6-ready browser tests with Healwright)"
     exit 1
 fi
 
@@ -578,26 +572,6 @@ elif [ "$FILE_EXTENSION" = "js" ]; then
         echo "    Warning: /jmeter/lib not found"
     fi
     echo ""
-    
-elif [ "$FILE_EXTENSION" = "java" ]; then
-    echo "[RUN] Java/TestNG Test Runner Selected"
-    echo "=========================================="
-    
-    # Verify Java and Maven exist
-    if command -v java >/dev/null 2>&1 && command -v mvn >/dev/null 2>&1; then
-        echo "[INFO] Java: $(which java)"
-        java -version 2>&1 | head -1
-        echo "[INFO] Maven: $(which mvn)"
-        mvn --version 2>&1 | head -1
-    else
-        echo " [ERROR] Java or Maven not found!"
-        echo "[DEBUG] PATH=$PATH"
-        exit 1
-    fi
-    
-    # Note: Java test will be copied with correct class name later (before Maven build)
-    # See Java test execution section below for proper copy with ${CLASS_NAME}.java
-    echo ""
 fi
 
 # Start Datadog forwarder in background (if enabled)
@@ -726,78 +700,6 @@ elif [ "$FILE_EXTENSION" = "js" ]; then
     # Run Node.js script with timeout
     timeout ${TASK_TIMEOUT} node "${TEST_FILE}" 2>&1
     JMETER_RAW_EXIT=$?
-    
-elif [ "$FILE_EXTENSION" = "java" ]; then
-    echo "[RUN] Running TestNG Test (with timeout protection)"
-    echo "=========================================="
-    echo ""
-    echo "  [INFO] Selenium + Healenium self-healing enabled"
-    echo "  [INFO] Parallel execution configured in testng.xml"
-    echo ""
-    
-    # Extract class name from Java file
-    CLASS_NAME=$(grep -E "^public class" "${TEST_FILE}" | awk '{print $3}' | head -1)
-    if [ -z "$CLASS_NAME" ]; then
-        echo " [ERROR] Could not extract class name from ${TEST_FILE}"
-        exit 1
-    fi
-    echo " Detected test class: ${CLASS_NAME}"
-    
-    # Copy downloaded test file to Maven project structure
-    MAVEN_TEST_DIR="/jmeter/java/src/test/java/com/testframework/tests"
-    mkdir -p "${MAVEN_TEST_DIR}"
-    cp "${TEST_FILE}" "${MAVEN_TEST_DIR}/${CLASS_NAME}.java"
-    echo " Copied test to: ${MAVEN_TEST_DIR}/${CLASS_NAME}.java"
-    echo ""
-    
-    # Export test configuration as system properties
-    export MAVEN_OPTS="${JVM_ARGS}"
-    
-    # Calculate threads per container for distributed execution
-    TOTAL_THREADS=${TOTAL_THREADS:-10}
-    NUM_CONTAINERS=${NUM_CONTAINERS:-1}
-    THREADS_PER_CONTAINER=$((TOTAL_THREADS / NUM_CONTAINERS))
-    
-    echo "=========================================="
-    echo "[THREAD DISTRIBUTION]"
-    echo "=========================================="
-    echo "Total Threads (from JMX): ${TOTAL_THREADS}"
-    echo "Number of Containers: ${NUM_CONTAINERS}"
-    echo "Threads per Container: ${THREADS_PER_CONTAINER}"
-    echo "This Container ID: ${CONTAINER_ID:-0}"
-    echo ""
-    
-    # Export environment variables that TestConfig will read
-    export APP_BASE_URL="${APP_BASE_URL:-https://example.com}"
-    export APP_USERNAME="${APP_USERNAME:-}"
-    export APP_PASSWORD="${APP_PASSWORD:-}"
-    export PARALLEL_USERS="${THREADS_PER_CONTAINER}"
-    export ITERATIONS="${ITERATIONS:-1}"
-    export THINK_TIME="${THINK_TIME:-2000}"
-    export HEALENIUM_SERVER_URL="${HEALENIUM_SERVER_URL:-http://localhost:7878}"
-    
-    echo "[COMMAND] cd /jmeter/java && timeout ${TASK_TIMEOUT} mvn test"
-    echo ""
-    
-    # Run Maven tests with timeout
-    cd /jmeter/java
-    timeout ${TASK_TIMEOUT} mvn test \
-        -Dparallel=methods \
-        -DthreadCount=${PARALLEL_USERS} \
-        -Dapp.base.url="${APP_BASE_URL}" \
-        -Dapp.username="${APP_USERNAME}" \
-        -Dapp.password="${APP_PASSWORD}" \
-        -Diterations="${ITERATIONS}" \
-        -Dthink.time="${THINK_TIME}" \
-        -Dhealenium.server.url="${HEALENIUM_SERVER_URL}" \
-        2>&1
-    JMETER_RAW_EXIT=$?
-    
-    # Copy test results to /tmp for upload
-    if [ -d "target/surefire-reports" ]; then
-        cp target/surefire-reports/*.xml /tmp/ 2>/dev/null || true
-        echo "   Test reports copied to /tmp"
-    fi
 fi
 
 echo ""

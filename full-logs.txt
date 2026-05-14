@@ -1,0 +1,63 @@
+2026-05-04T13:00:07 ==========================================
+2026-05-04T13:00:07 JMeter Batch Framework Container
+2026-05-04T13:00:07 ==========================================
+2026-05-04T13:00:07 Test ID: ssp-api-test
+2026-05-04T13:00:07 Container ID: 0
+2026-05-04T13:00:07 Run ID: test-20260504-125904-216
+2026-05-04T13:00:07 ==========================================
+2026-05-04T13:00:07 [JVM] Using custom JVM_ARGS: -Xms512m -Xmx2g
+2026-05-04T13:00:07 [CONFIG] Config Bucket: s3://jmeter-framework-config
+2026-05-04T13:00:07 [CONFIG] Results Bucket: s3://jmeter-framework-results
+2026-05-04T13:00:07 [CONFIG] Test Script: s3://jmeter-framework-config/tests/SSP_API_Add_Product_User.jmx
+2026-05-04T13:00:07 [CONFIG] Data File: s3://jmeter-framework-config/data/SSP_API_Test_Data_3.csv
+2026-05-04T13:00:07 [CONFIG] JVM Args: -Xms512m -Xmx2g
+2026-05-04T13:00:07 ==========================================
+2026-05-04T13:00:07 [DOWNLOAD] Downloading test files from S3
+2026-05-04T13:00:07 ==========================================
+2026-05-04T13:00:07  Downloading test script...
+2026-05-04T13:00:07  Detected file extension: .jmx
+2026-05-04T13:00:07  Test file will be saved to: /tmp/test.jmx
+2026-05-04T13:00:07   [VALIDATE] Checking if file exists: s3://jmeter-framework-config/tests/SSP_API_Add_Product_User.jmx
+2026-05-04T13:00:07    [VALIDATED] File exists in S3
+2026-05-04T13:00:07   [VALIDATE] Checking S3 read permissions...
+2026-05-04T13:00:08    [VALIDATED] S3 read permissions OK
+2026-05-04T13:00:08   [DOWNLOAD] s3://jmeter-framework-config/tests/SSP_API_Add_Product_User.jmx  /tmp/test.jmx
+2026-05-04T13:00:08   [AWS CLI] Running: aws s3 cp s3://jmeter-framework-config/tests/SSP_API_Add_Product_User.jmx /tmp/test.jmx
+2026-05-04T13:00:08   [AWS CLI OUTPUT] Completed 246.5 KiB/246.5 KiB (2.5 MiB/s) with 1 file(s) remainingdownload: s3://jmeter-framework-config/tests/SSP_API_Add_Product_User.jmx to ../tmp/test.jmx
+2026-05-04T13:00:08    [SUCCESS] Downloaded 252371 bytes to: /tmp/test.jmx
+2026-05-04T13:00:08   [FILE INFO] -rw-r--r--. 1 root root 247K May  4 10:32 /tmp/test.jmx
+2026-05-04T13:00:08  Downloading data file...
+2026-05-04T13:00:08   [INFO] S3 path: s3://jmeter-framework-config/data/SSP_API_Test_Data_3.csv
+2026-05-04T13:00:08   [INFO] Local filename: SSP_API_Test_Data_3.csv (preserves original name with spaces)
+2026-05-04T13:00:08   [VALIDATE] Checking if file exists: s3://jmeter-framework-config/data/SSP_API_Test_Data_3.csv
+2026-05-04T13:00:09    [VALIDATED] File exists in S3
+2026-05-04T13:00:09   [VALIDATE] Checking S3 read permissions...
+2026-05-04T13:00:10    [VALIDATED] S3 read permissions OK
+2026-05-04T13:00:10   [DOWNLOAD] s3://jmeter-framework-config/data/SSP_API_Test_Data_3.csv  /tmp/SSP_API_Test_Data_3.csv
+2026-05-04T13:00:10   [AWS CLI] Running: aws s3 cp s3://jmeter-framework-config/data/SSP_API_Test_Data_3.csv /tmp/SSP_API_Test_Data_3.csv
+2026-05-04T13:00:10   [AWS CLI OUTPUT] Completed 114 Bytes/114 Bytes (1.4 KiB/s) with 1 file(s) remainingdownload: s3://jmeter-framework-config/data/SSP_API_Test_Data_3.csv to ../tmp/SSP_API_Test_Data_3.csv
+2026-05-04T13:00:10    [SUCCESS] Downloaded 114 bytes to: /tmp/SSP_API_Test_Data_3.csv
+2026-05-04T13:00:10   [FILE INFO] -rw-r--r--. 1 root root 114 May  1 15:58 /tmp/SSP_API_Test_Data_3.csv
+2026-05-04T13:00:10   [VALIDATE] Checking CSV file integrity...
+2026-05-04T13:00:10   [CSV HEADER] UM_Username_2,UM_Password_2
+2026-05-04T13:00:10   [CSV INFO] File has 4 lines
+2026-05-04T13:00:10   [CSV CONTENT] First 20 lines of CSV file:
+2026-05-04T13:00:10   ----------------------------------------
+2026-05-04T13:00:10   | UM_Username_2,UM_Password_2
+2026-05-04T13:00:10   | 1000009772uat,1000009772Pw
+2026-05-04T13:00:10   | 1000009772uat1,1000009772Pw
+2026-05-04T13:00:10   | 1000285321uat,1000285321-p
+2026-05-04T13:00:10   ----------------------------------------
+2026-05-04T13:00:10   [CSV HEX] First line in hexadecimal (to detect hidden characters):
+2026-05-04T13:00:10  55 4d 5f 55 73 65 72 6e 61 6d 65 5f 32 2c 55 4d
+2026-05-04T13:00:10  5f 50 61 73 73 77 6f 72 64 5f 32 0d 0a
+2026-05-04T13:00:10    Downloaded to: /tmp/SSP_API_Test_Data_3.csv
+2026-05-04T13:00:10 ==========================================
+2026-05-04T13:00:10 [JMX] Rewriting CSV file paths for container
+2026-05-04T13:00:10 ==========================================
+2026-05-04T13:00:10   Converting local CSV paths to container paths (/tmp/)
+2026-05-04T13:00:10 [JMX] CSV files in /tmp before JMX rewrite:
+2026-05-04T13:00:10 -rw-r--r--. 1 root root 114 May  1 15:58 /tmp/SSP_API_Test_Data_3.csv
+2026-05-04T13:00:10 ============================================================
+2026-05-04T13:00:10 JMX CSV Path Rewriter
+2026-05-04T13:00:10 ============================================================

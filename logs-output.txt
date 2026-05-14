@@ -1,0 +1,2 @@
+
+aws: [ERROR]: An error occurred (InvalidParameterException) when calling the FilterLogEvents operation: Invalid character(s) in term '/'

@@ -1,0 +1,2 @@
+2026-05-04T18:01:45 [DATADOG-FORWARDER] 2026-05-04 18:01:45 - WARNING - Failed to parse line: invalid literal for int() with base 10: 'timeStamp' - Line: timeStamp,elapsed,label,responseCode,responseMessage,threadName,dataType,success,failureMessage,byte
+2026-05-04T18:01:45 [DATADOG-FORWARDER] 2026-05-04 18:01:45 - ERROR - [ERROR] Error sending metrics to Datadog: Invalid JSON response: b'Invalid API Key'

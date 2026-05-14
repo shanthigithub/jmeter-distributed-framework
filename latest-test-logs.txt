@@ -1,0 +1,16 @@
+2026-05-04T09:52:42 ==========================================
+2026-05-04T09:52:42 JMeter Batch Framework Container
+2026-05-04T09:52:42 ==========================================
+2026-05-04T09:52:42 Test ID: ssp-api-test
+2026-05-04T09:52:42 Container ID: 0
+2026-05-04T09:52:42 Run ID: test-20260504-095141-210
+2026-05-04T09:52:42 ==========================================
+2026-05-04T09:52:42 [JVM] Using custom JVM_ARGS: -Xms1g -Xmx3g
+2026-05-04T09:52:42 [CONFIG] Config Bucket: s3://jmeter-framework-config
+2026-05-04T09:52:42 [CONFIG] Results Bucket: s3://jmeter-framework-results
+2026-05-04T09:52:42 [CONFIG] Test Script: s3://jmeter-framework-config/tests/SSP_API_Add_Product_User.jmx
+2026-05-04T09:52:42 [CONFIG] Data File: s3://jmeter-framework-config/data/SSP_API_Test_Data_3.csv
+2026-05-04T09:52:42 [CONFIG] JVM Args: -Xms1g -Xmx3g
+2026-05-04T09:52:42 ==========================================
+2026-05-04T09:52:42 [DOWNLOAD] Downloading test files from S3
+2026-05-04T09:52:42 ==========================================

@@ -1,0 +1,296 @@
+2026-05-05T04:32:20 ==========================================
+2026-05-05T04:32:20 JMeter Batch Framework Container
+2026-05-05T04:32:20 ==========================================
+2026-05-05T04:32:20 Test ID: ssp-api-test
+2026-05-05T04:32:20 Container ID: 0
+2026-05-05T04:32:20 Run ID: test-20260505-043116-224
+2026-05-05T04:32:20 ==========================================
+2026-05-05T04:32:20 [JVM] Using custom JVM_ARGS: -Xms512m -Xmx2g
+2026-05-05T04:32:20 [CONFIG] Config Bucket: s3://jmeter-framework-config
+2026-05-05T04:32:20 [CONFIG] Results Bucket: s3://jmeter-framework-results
+2026-05-05T04:32:20 [CONFIG] Test Script: s3://jmeter-framework-config/tests/SSP_API_Add_Product_User.jmx
+2026-05-05T04:32:20 [CONFIG] Data File: s3://jmeter-framework-config/data/SSP_API_Test_Data_3.csv
+2026-05-05T04:32:20 [CONFIG] JVM Args: -Xms512m -Xmx2g
+2026-05-05T04:32:20 ==========================================
+2026-05-05T04:32:20 [DOWNLOAD] Downloading test files from S3
+2026-05-05T04:32:20 ==========================================
+2026-05-05T04:32:20  Downloading test script...
+2026-05-05T04:32:20  Detected file extension: .jmx
+2026-05-05T04:32:20  Test file will be saved to: /tmp/test.jmx
+2026-05-05T04:32:20   [VALIDATE] Checking if file exists: s3://jmeter-framework-config/tests/SSP_API_Add_Product_User.jmx
+2026-05-05T04:32:21    [VALIDATED] File exists in S3
+2026-05-05T04:32:21   [VALIDATE] Checking S3 read permissions...
+2026-05-05T04:32:21    [VALIDATED] S3 read permissions OK
+2026-05-05T04:32:21   [DOWNLOAD] s3://jmeter-framework-config/tests/SSP_API_Add_Product_User.jmx  /tmp/test.jmx
+2026-05-05T04:32:21   [AWS CLI] Running: aws s3 cp s3://jmeter-framework-config/tests/SSP_API_Add_Product_User.jmx /tmp/test.jmx
+2026-05-05T04:32:22   [AWS CLI OUTPUT] Completed 11.8 KiB/11.8 KiB (80.8 KiB/s) with 1 file(s) remainingdownload: s3://jmeter-framework-config/tests/SSP_API_Add_Product_User.jmx to ../tmp/test.jmx
+2026-05-05T04:32:22    [SUCCESS] Downloaded 12033 bytes to: /tmp/test.jmx
+2026-05-05T04:32:22   [FILE INFO] -rw-r--r--. 1 root root 12K May  4 18:27 /tmp/test.jmx
+2026-05-05T04:32:22  Downloading data file...
+2026-05-05T04:32:22   [INFO] S3 path: s3://jmeter-framework-config/data/SSP_API_Test_Data_3.csv
+2026-05-05T04:32:22   [INFO] Local filename: SSP_API_Test_Data_3.csv (preserves original name with spaces)
+2026-05-05T04:32:22   [VALIDATE] Checking if file exists: s3://jmeter-framework-config/data/SSP_API_Test_Data_3.csv
+2026-05-05T04:32:23    [VALIDATED] File exists in S3
+2026-05-05T04:32:23   [VALIDATE] Checking S3 read permissions...
+2026-05-05T04:32:23    [VALIDATED] S3 read permissions OK
+2026-05-05T04:32:23   [DOWNLOAD] s3://jmeter-framework-config/data/SSP_API_Test_Data_3.csv  /tmp/SSP_API_Test_Data_3.csv
+2026-05-05T04:32:23   [AWS CLI] Running: aws s3 cp s3://jmeter-framework-config/data/SSP_API_Test_Data_3.csv /tmp/SSP_API_Test_Data_3.csv
+2026-05-05T04:32:24   [AWS CLI OUTPUT] Completed 114 Bytes/114 Bytes (1.4 KiB/s) with 1 file(s) remainingdownload: s3://jmeter-framework-config/data/SSP_API_Test_Data_3.csv to ../tmp/SSP_API_Test_Data_3.csv
+2026-05-05T04:32:24    [SUCCESS] Downloaded 114 bytes to: /tmp/SSP_API_Test_Data_3.csv
+2026-05-05T04:32:24   [FILE INFO] -rw-r--r--. 1 root root 114 May  1 15:58 /tmp/SSP_API_Test_Data_3.csv
+2026-05-05T04:32:24   [VALIDATE] Checking CSV file integrity...
+2026-05-05T04:32:24   [CSV HEADER] UM_Username_2,UM_Password_2
+2026-05-05T04:32:24   [CSV INFO] File has 4 lines
+2026-05-05T04:32:24   [CSV CONTENT] First 20 lines of CSV file:
+2026-05-05T04:32:24   ----------------------------------------
+2026-05-05T04:32:24   | UM_Username_2,UM_Password_2
+2026-05-05T04:32:24   | 1000009772uat,1000009772Pw
+2026-05-05T04:32:24   | 1000009772uat1,1000009772Pw
+2026-05-05T04:32:24   | 1000285321uat,1000285321-p
+2026-05-05T04:32:24   ----------------------------------------
+2026-05-05T04:32:24   [CSV HEX] First line in hexadecimal (to detect hidden characters):
+2026-05-05T04:32:24  55 4d 5f 55 73 65 72 6e 61 6d 65 5f 32 2c 55 4d
+2026-05-05T04:32:24  5f 50 61 73 73 77 6f 72 64 5f 32 0d 0a
+2026-05-05T04:32:24    Downloaded to: /tmp/SSP_API_Test_Data_3.csv
+2026-05-05T04:32:24 ==========================================
+2026-05-05T04:32:24 [JMX] Rewriting CSV file paths for container
+2026-05-05T04:32:24 ==========================================
+2026-05-05T04:32:24   Converting local CSV paths to container paths (/tmp/)
+2026-05-05T04:32:24 [JMX] CSV files in /tmp before JMX rewrite:
+2026-05-05T04:32:24 -rw-r--r--. 1 root root 114 May  1 15:58 /tmp/SSP_API_Test_Data_3.csv
+2026-05-05T04:32:24 ============================================================
+2026-05-05T04:32:24 JMX CSV Path Rewriter
+2026-05-05T04:32:24 ============================================================
+2026-05-05T04:32:24 [INFO] Reading JMX file: /tmp/test.jmx
+2026-05-05T04:32:24 [INFO] No CSV paths needed to be rewritten
+2026-05-05T04:32:24 ============================================================
+2026-05-05T04:32:24    JMX file updated with container paths
+2026-05-05T04:32:24 ==========================================
+2026-05-05T04:32:24 [JMX] Injecting ThreadGroup Partitioning
+2026-05-05T04:32:24 ==========================================
+2026-05-05T04:32:24   Dividing thread count among containers
+2026-05-05T04:32:24   Container 0 of 1
+2026-05-05T04:32:24 ======================================================================
+2026-05-05T04:32:24 ThreadGroup Partitioning Injection
+2026-05-05T04:32:24 ======================================================================
+2026-05-05T04:32:24 Container: 1 of 1
+2026-05-05T04:32:24 JMX File: /tmp/test.jmx
+2026-05-05T04:32:24 ======================================================================
+2026-05-05T04:32:24 [INFO] Found 1 ThreadGroup element(s)
+2026-05-05T04:32:24   [SUCCESS] UM Add Product User Medium_2:
+2026-05-05T04:32:24      Original threads: 1
+2026-05-05T04:32:24      Threads per container: ~1
+2026-05-05T04:32:24      This container (1): 1 threads
+2026-05-05T04:32:24      Thread range: 1-1
+2026-05-05T04:32:24 [SUCCESS] Modified 1 ThreadGroup(s)
+2026-05-05T04:32:24 [SAVE] Saved to: /tmp/test.jmx
+2026-05-05T04:32:24 ======================================================================
+2026-05-05T04:32:24    ThreadGroup partitioning injected successfully
+2026-05-05T04:32:24 ==========================================
+2026-05-05T04:32:24 [JMX] Injecting CSV Data Partitioning
+2026-05-05T04:32:24 ==========================================
+2026-05-05T04:32:24   Adding offset/increment for distributed data access
+2026-05-05T04:32:24 ======================================================================
+2026-05-05T04:32:24 CSV Data Partitioning Injection
+2026-05-05T04:32:24 ======================================================================
+2026-05-05T04:32:24 Container: 0 of 1
+2026-05-05T04:32:24 JMX File: /tmp/test.jmx
+2026-05-05T04:32:24 ======================================================================
+2026-05-05T04:32:24 [INFO] Found 1 CSV Data Set config(s)
+2026-05-05T04:32:24 [PARTITION] CSV Data Set Config
+2026-05-05T04:32:24    File: /tmp/SSP_API_Test_Data_3.csv
+2026-05-05T04:32:24    => offset=0, increment=1
+2026-05-05T04:32:24    (Container 0 will read rows 0, 1, 2, ...)
+2026-05-05T04:32:24 ======================================================================
+2026-05-05T04:32:24 [SUCCESS] Successfully injected partitioning into 1 CSV config(s)
+2026-05-05T04:32:24 ======================================================================
+2026-05-05T04:32:24    CSV partitioning injected successfully
+2026-05-05T04:32:24 [JMX] CSV references in JMX file after all modifications:
+2026-05-05T04:32:24         <stringProp name="filename">/tmp/SSP_API_Test_Data_3.csv</stringProp>
+2026-05-05T04:32:24         <boolProp name="ignoreFirstLine">false</boolProp>
+2026-05-05T04:32:24 ==========================================
+2026-05-05T04:32:24 [DEBUG] CSV File Verification
+2026-05-05T04:32:24 ==========================================
+2026-05-05T04:32:24 [DEBUG] 1. CSV files referenced in JMX:
+2026-05-05T04:32:24    JMX references: /tmp/SSP_API_Test_Data_3.csv
+2026-05-05T04:32:24 [DEBUG] 2. All files in /tmp directory:
+2026-05-05T04:32:24 total 36K
+2026-05-05T04:32:24 drwxrwxrwt. 1 root root 4.0K May  5 04:32 .
+2026-05-05T04:32:24 drwxr-xr-x. 1 root root 4.0K May  5 04:32 ..
+2026-05-05T04:32:24 -rw-r--r--. 1 root root  114 May  1 15:58 SSP_API_Test_Data_3.csv
+2026-05-05T04:32:24 drwxr-xr-x. 2 root root 4.0K Apr 30 13:24 hsperfdata_root
+2026-05-05T04:32:24 -rw-r--r--. 1 root root  12K May  5 04:32 test.jmx
+2026-05-05T04:32:24 [DEBUG] 3. CSV file existence check:
+2026-05-05T04:32:24    EXISTS: /tmp/SSP_API_Test_Data_3.csv (114 bytes)
+2026-05-05T04:32:24      First 3 lines:
+2026-05-05T04:32:24        UM_Username_2,UM_Password_2
+2026-05-05T04:32:24        1000009772uat,1000009772Pw
+2026-05-05T04:32:24        1000009772uat1,1000009772Pw
+2026-05-05T04:32:24 ==========================================
+2026-05-05T04:32:24  [SUCCESS] All required downloads complete
+2026-05-05T04:32:24 [SYNC] Synchronization disabled - starting immediately
+2026-05-05T04:32:24 ==========================================
+2026-05-05T04:32:24 [BROWSER] Starting virtual display (Xvfb)
+2026-05-05T04:32:24 ==========================================
+2026-05-05T04:32:24 [BROWSER] Xvfb started (PID: 62, DISPLAY: :99)
+2026-05-05T04:32:24 [BROWSER] Virtual screen: 1920x1080x24
+2026-05-05T04:32:26  [BROWSER] Virtual display ready for headless browser execution
+2026-05-05T04:32:26 ==========================================
+2026-05-05T04:32:26 [RUN] JMeter Test Runner Selected
+2026-05-05T04:32:26 ==========================================
+2026-05-05T04:32:26 [INFO] JMeter binary: /opt/jmeter/bin/jmeter
+2026-05-05T04:32:27 WARN StatusConsoleListener The use of package scanning to locate plugins is deprecated and will be removed in a future release
+2026-05-05T04:32:27 WARN StatusConsoleListener The use of package scanning to locate plugins is deprecated and will be removed in a future release
+2026-05-05T04:32:27 WARN StatusConsoleListener The use of package scanning to locate plugins is deprecated and will be removed in a future release
+2026-05-05T04:32:28  [DEBUG-ENTRYPOINT] Checking Datadog environment variable...
+2026-05-05T04:32:28  [DEBUG-ENTRYPOINT] ENABLE_DATADOG_METRICS='true'
+2026-05-05T04:32:28  [DEBUG-ENTRYPOINT] Expected value: 'true' (lowercase)
+2026-05-05T04:32:28 ==========================================
+2026-05-05T04:32:28 [DATADOG]  Metrics ENABLED - Starting Forwarder
+2026-05-05T04:32:28 ==========================================
+2026-05-05T04:32:28 [DATADOG] Configuration:
+2026-05-05T04:32:28   API Site: datadoghq.com
+2026-05-05T04:32:28   Tags: test_id:ssp-api-test,run_id:test-20260505-043116-224,container_id:0
+2026-05-05T04:32:28   JTL File: /tmp/results-0.jtl
+2026-05-05T04:32:28  [DATADOG] Forwarder started (PID: 117)
+2026-05-05T04:32:28 [DATADOG] Metrics will be sent in real-time as test runs
+2026-05-05T04:32:28 ==========================================
+2026-05-05T04:32:28 [TIMEOUT] Protection Settings
+2026-05-05T04:32:28 ==========================================
+2026-05-05T04:32:28 Estimated Test Duration: 31s (0m)
+2026-05-05T04:32:28 Timeout Buffer: 1800s (30m)
+2026-05-05T04:32:28 Maximum Task Runtime: 1831s (30m)
+2026-05-05T04:32:28 ==========================================
+2026-05-05T04:32:28 [RUN] Running JMeter Test (with timeout protection)
+2026-05-05T04:32:28 ==========================================
+2026-05-05T04:32:28 [COMMAND] timeout 1831 jmeter -n -t /tmp/test.jmx -l /tmp/results-0.jtl -j /tmp/jmeter-0.log -JcontainerId 0 -JtotalContainers 1 -JthreadsPerContainer 1
+2026-05-05T04:32:28 [DATADOG-FORWARDER] 2026-05-05 04:32:28 - INFO - ============================================================
+2026-05-05T04:32:28 [DATADOG-FORWARDER] 2026-05-05 04:32:28 - INFO - JMeter to Datadog Metrics Forwarder
+2026-05-05T04:32:28 [DATADOG-FORWARDER] 2026-05-05 04:32:28 - INFO - ============================================================
+2026-05-05T04:32:28 [DATADOG-FORWARDER] 2026-05-05 04:32:28 - INFO - JTL File: /tmp/results-0.jtl
+2026-05-05T04:32:28 [DATADOG-FORWARDER] 2026-05-05 04:32:28 - INFO - Datadog Site: datadoghq.com
+2026-05-05T04:32:28 [DATADOG-FORWARDER] 2026-05-05 04:32:28 - INFO - Tags: test_id:ssp-api-test,run_id:test-20260505-043116-224,container_id:0
+2026-05-05T04:32:28 [DATADOG-FORWARDER] 2026-05-05 04:32:28 - INFO - Send Interval: 10s
+2026-05-05T04:32:28 [DATADOG-FORWARDER] 2026-05-05 04:32:28 - INFO - ============================================================
+2026-05-05T04:32:28 [DATADOG-FORWARDER] 2026-05-05 04:32:28 - INFO - Initializing Datadog API (site: datadoghq.com)
+2026-05-05T04:32:28 [DATADOG-FORWARDER] 2026-05-05 04:32:28 - INFO - No agent or invalid configuration file found
+2026-05-05T04:32:28 [DATADOG-FORWARDER] 2026-05-05 04:32:28 - INFO - Datadog initialized with tags: ['test_id:ssp-api-test', 'run_id:test-20260505-043116-224', 'container_id:0']
+2026-05-05T04:32:28 [DATADOG-FORWARDER] 2026-05-05 04:32:28 - INFO - Waiting for JTL file: /tmp/results-0.jtl
+2026-05-05T04:32:29 WARN StatusConsoleListener The use of package scanning to locate plugins is deprecated and will be removed in a future release
+2026-05-05T04:32:29 WARN StatusConsoleListener The use of package scanning to locate plugins is deprecated and will be removed in a future release
+2026-05-05T04:32:29 WARN StatusConsoleListener The use of package scanning to locate plugins is deprecated and will be removed in a future release
+2026-05-05T04:32:29 WARN StatusConsoleListener The use of package scanning to locate plugins is deprecated and will be removed in a future release
+2026-05-05T04:32:29 04:32:29.665 INFO  o.a.j.u.JMeterUtils - Setting Locale to en_EN
+2026-05-05T04:32:29 04:32:29.683 INFO  o.a.j.JMeter - Loading user properties from: /opt/jmeter/bin/user.properties
+2026-05-05T04:32:29 04:32:29.684 INFO  o.a.j.JMeter - Loading system properties from: /opt/jmeter/bin/system.properties
+2026-05-05T04:32:29 04:32:29.685 INFO  o.a.j.JMeter - Setting JMeter property: containerId=0
+2026-05-05T04:32:29 04:32:29.685 INFO  o.a.j.JMeter - Setting JMeter property: totalContainers=1
+2026-05-05T04:32:29 04:32:29.686 INFO  o.a.j.JMeter - Setting JMeter property: threadsPerContainer=1
+2026-05-05T04:32:29 04:32:29.698 INFO  o.a.j.JMeter - Copyright (c) 1998-2024 The Apache Software Foundation
+2026-05-05T04:32:29 04:32:29.699 INFO  o.a.j.JMeter - Version 5.6.3
+2026-05-05T04:32:29 04:32:29.700 INFO  o.a.j.JMeter - java.version=17.0.18
+2026-05-05T04:32:29 04:32:29.702 INFO  o.a.j.JMeter - java.vm.name=OpenJDK 64-Bit Server VM
+2026-05-05T04:32:29 04:32:29.702 INFO  o.a.j.JMeter - os.name=Linux
+2026-05-05T04:32:29 04:32:29.707 INFO  o.a.j.JMeter - os.arch=amd64
+2026-05-05T04:32:29 04:32:29.708 INFO  o.a.j.JMeter - os.version=6.1.166
+2026-05-05T04:32:29 04:32:29.709 INFO  o.a.j.JMeter - file.encoding=ANSI_X3.4-1968
+2026-05-05T04:32:29 04:32:29.709 INFO  o.a.j.JMeter - java.awt.headless=true
+2026-05-05T04:32:29 04:32:29.710 INFO  o.a.j.JMeter - Max memory     =2147483648
+2026-05-05T04:32:29 04:32:29.710 INFO  o.a.j.JMeter - Available Processors =2
+2026-05-05T04:32:29 04:32:29.723 INFO  o.a.j.JMeter - Default Locale=English (EN)
+2026-05-05T04:32:29 04:32:29.725 INFO  o.a.j.JMeter - JMeter  Locale=English (EN)
+2026-05-05T04:32:29 04:32:29.726 INFO  o.a.j.JMeter - JMeterHome=/opt/jmeter
+2026-05-05T04:32:29 04:32:29.727 INFO  o.a.j.JMeter - user.dir  =/jmeter
+2026-05-05T04:32:29 04:32:29.727 INFO  o.a.j.JMeter - PWD       =/jmeter
+2026-05-05T04:32:29 04:32:29.728 INFO  o.a.j.JMeter - IP: 172.31.0.163 Name: ip-172-31-0-163.ec2.internal FullName: ip-172-31-0-163.ec2.internal
+2026-05-05T04:32:29 04:32:29.746 INFO  o.a.j.s.FileServer - Default base='/jmeter'
+2026-05-05T04:32:29 04:32:29.749 INFO  o.a.j.s.FileServer - Set new base='/tmp'
+2026-05-05T04:32:30 04:32:30.101 INFO  o.a.j.s.SaveService - Testplan (JMX) version: 2.2. Testlog (JTL) version: 2.2
+2026-05-05T04:32:30 04:32:30.149 INFO  o.a.j.s.SaveService - Using SaveService properties version 5.0
+2026-05-05T04:32:30 04:32:30.154 INFO  o.a.j.s.SaveService - Using SaveService properties file encoding UTF-8
+2026-05-05T04:32:30 04:32:30.162 INFO  o.a.j.s.SaveService - Loading file: /tmp/test.jmx
+2026-05-05T04:32:30 04:32:30.206 INFO  o.a.j.p.h.c.CacheManager - Will only cache the following methods: [GET]
+2026-05-05T04:32:30 04:32:30.210 INFO  o.a.j.p.h.c.CookieManager - Settings: Delete null: true Check: true Allow variable: true Save: false Prefix: COOKIE_
+2026-05-05T04:32:30 04:32:30.270 INFO  o.a.j.p.h.s.HTTPSamplerBase - Parser for text/html is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2026-05-05T04:32:30 04:32:30.271 INFO  o.a.j.p.h.s.HTTPSamplerBase - Parser for application/xhtml+xml is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2026-05-05T04:32:30 04:32:30.272 INFO  o.a.j.p.h.s.HTTPSamplerBase - Parser for application/xml is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2026-05-05T04:32:30 04:32:30.273 INFO  o.a.j.p.h.s.HTTPSamplerBase - Parser for text/xml is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2026-05-05T04:32:30 04:32:30.273 INFO  o.a.j.p.h.s.HTTPSamplerBase - Parser for text/vnd.wap.wml is org.apache.jmeter.protocol.http.parser.RegexpHTMLParser
+2026-05-05T04:32:30 04:32:30.274 INFO  o.a.j.p.h.s.HTTPSamplerBase - Parser for text/css is org.apache.jmeter.protocol.http.parser.CssParser
+2026-05-05T04:32:30 May 05, 2026 4:32:30 AM java.util.prefs.FileSystemPreferences$1 run
+2026-05-05T04:32:30 INFO: Created user preferences directory.
+2026-05-05T04:32:30 04:32:30.306 INFO  o.a.j.JMeter - Creating summariser <summary>
+2026-05-05T04:32:30 Creating summariser <summary>
+2026-05-05T04:32:30 Created the tree successfully using /tmp/test.jmx
+2026-05-05T04:32:30 Starting standalone test @ 2026 May 5 04:32:30 GMT (1777955550315)
+2026-05-05T04:32:30 04:32:30.334 INFO  o.a.j.e.StandardJMeterEngine - Running the test!
+2026-05-05T04:32:30 04:32:30.335 INFO  o.a.j.s.SampleEvent - List of sample_variables: []
+2026-05-05T04:32:30 04:32:30.336 INFO  o.a.j.s.SampleEvent - List of sample_variables: []
+2026-05-05T04:32:30 04:32:30.343 INFO  o.a.j.e.u.CompoundVariable - Note: Function class names must contain the string: '.functions.'
+2026-05-05T04:32:30 Waiting for possible Shutdown/StopTestNow/HeapDump/ThreadDump message on port 4445
+2026-05-05T04:32:30 04:32:30.344 INFO  o.a.j.e.u.CompoundVariable - Note: Function class names must not contain the string: '.gui.'
+2026-05-05T04:32:30 04:32:30.425 INFO  o.a.j.r.ClassFinder - Will scan jar /opt/jmeter/lib/ext/jmeter-plugins-wsc-0.7.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2026-05-05T04:32:30 04:32:30.429 INFO  o.a.j.r.ClassFinder - Will scan jar /opt/jmeter/lib/ext/perfmon-2.2.2.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2026-05-05T04:32:30 04:32:30.444 INFO  o.a.j.r.ClassFinder - Will scan jar /opt/jmeter/lib/ext/jmeter-plugins-functions-2.2.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2026-05-05T04:32:30 04:32:30.450 INFO  o.a.j.r.ClassFinder - Will scan jar /opt/jmeter/lib/ext/commons-lang3-3.12.0.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2026-05-05T04:32:30 04:32:30.543 INFO  o.a.j.r.ClassFinder - Will scan jar /opt/jmeter/lib/ext/jmeter-plugins-dummy-0.4.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2026-05-05T04:32:30 04:32:30.547 INFO  o.a.j.r.ClassFinder - Will scan jar /opt/jmeter/lib/ext/jmeter-bzm-http2-1.4.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2026-05-05T04:32:30 04:32:30.577 INFO  o.a.j.r.ClassFinder - Will scan jar /opt/jmeter/lib/ext/jmeter-plugins-casutg-2.10.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2026-05-05T04:32:30 04:32:30.595 INFO  o.a.j.r.ClassFinder - Will scan jar /opt/jmeter/lib/ext/jmeter-plugins-cmn-jmeter-0.7.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2026-05-05T04:32:30 04:32:30.623 INFO  o.a.j.r.ClassFinder - Will scan jar /opt/jmeter/lib/ext/jmeter-plugins-manager.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2026-05-05T04:32:30 04:32:30.740 INFO  o.a.j.r.ClassFinder - Will scan jar /opt/jmeter/lib/ext/jmeter-parallel-0.12.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2026-05-05T04:32:30 04:32:30.747 INFO  o.a.j.r.ClassFinder - Will scan jar /opt/jmeter/lib/ext/jmeter-plugins-graphs-basic-2.0.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2026-05-05T04:32:30 04:32:30.750 INFO  o.a.j.r.ClassFinder - Will scan jar /opt/jmeter/lib/ext/commons-pool2-2.11.1.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2026-05-05T04:32:30 04:32:30.765 INFO  o.a.j.r.ClassFinder - Will scan jar /opt/jmeter/lib/ext/jmeter-plugins-ffw-2.0.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2026-05-05T04:32:30 04:32:30.767 INFO  o.a.j.r.ClassFinder - Will scan jar /opt/jmeter/lib/ext/jmeter-plugins-json-2.7.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2026-05-05T04:32:30 04:32:30.773 INFO  o.a.j.r.ClassFinder - Will scan jar /opt/jmeter/lib/ext/jmeter-plugins-random-csv-data-set-0.8.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2026-05-05T04:32:30 04:32:30.777 INFO  o.a.j.r.ClassFinder - Will scan jar /opt/jmeter/lib/ext/jmeter-plugins-perfmon-2.1.jar with filter ExtendsClassFilter [parents=[interface org.apache.jmeter.functions.Function], inner=false, contains=null, notContains=null]. Consider exposing JMeter plugins via META-INF/services, and add JMeter-Skip-Class-Scanning=true manifest attribute so JMeter can skip classfile scanning
+2026-05-05T04:32:30 04:32:30.873 INFO  o.a.j.JMeter - Running test (1777955550873)
+2026-05-05T04:32:30 04:32:30.922 INFO  o.a.j.e.StandardJMeterEngine - Starting ThreadGroup: 1 : UM Add Product User Medium_2
+2026-05-05T04:32:30 04:32:30.923 INFO  o.a.j.e.StandardJMeterEngine - Starting 1 threads for group UM Add Product User Medium_2.
+2026-05-05T04:32:30 04:32:30.923 INFO  o.a.j.e.StandardJMeterEngine - Thread will start next loop on error
+2026-05-05T04:32:30 04:32:30.923 INFO  o.a.j.t.ThreadGroup - Starting thread group... number=1 threads=1 ramp-up=1 delayedStart=false
+2026-05-05T04:32:30 04:32:30.929 INFO  o.a.j.t.ThreadGroup - Started thread group number 1
+2026-05-05T04:32:30 04:32:30.930 INFO  o.a.j.e.StandardJMeterEngine - All thread groups have been started
+2026-05-05T04:32:30 04:32:30.935 INFO  o.a.j.s.SampleResult - Note: Sample TimeStamps are START times
+2026-05-05T04:32:30 04:32:30.937 INFO  o.a.j.s.SampleResult - sampleresult.default.encoding is set to UTF-8
+2026-05-05T04:32:30 04:32:30.937 INFO  o.a.j.s.SampleResult - sampleresult.useNanoTime=true
+2026-05-05T04:32:30 04:32:30.937 INFO  o.a.j.s.SampleResult - sampleresult.nanoThreadSleep=5000
+2026-05-05T04:32:30 04:32:30.985 INFO  o.a.j.t.JMeterThread - Thread started: UM Add Product User Medium_2 1-1
+2026-05-05T04:32:30 04:32:30.987 INFO  o.a.j.s.FileServer - Stored: /tmp/SSP_API_Test_Data_3.csv
+2026-05-05T04:32:31 04:32:31.022 INFO  o.a.j.p.h.s.HTTPHCAbstractImpl - Local host = ip-172-31-0-163.ec2.internal
+2026-05-05T04:32:31 04:32:31.031 INFO  o.a.j.p.h.s.HTTPHC4Impl - HTTP request retry count = 0
+2026-05-05T04:32:31 04:32:31.116 INFO  o.a.j.p.h.s.h.LazyLayeredConnectionSocketFactory - Setting up HTTPS TrustAll Socket Factory
+2026-05-05T04:32:31 04:32:31.129 INFO  o.a.j.u.JsseSSLManager - Using default SSL protocol: TLS
+2026-05-05T04:32:31 04:32:31.130 INFO  o.a.j.u.JsseSSLManager - SSL session context: per-thread
+2026-05-05T04:32:31 04:32:31.226 INFO  o.a.j.u.SSLManager - JmeterKeyStore Location:  type JKS
+2026-05-05T04:32:31 04:32:31.230 INFO  o.a.j.u.SSLManager - KeyStore created OK
+2026-05-05T04:32:31 04:32:31.231 WARN  o.a.j.u.SSLManager - Keystore file not found, loading empty keystore
+2026-05-05T04:32:31 [DATADOG-FORWARDER] 2026-05-05 04:32:31 - INFO - [SUCCESS] JTL file found, starting to tail...
+2026-05-05T04:32:31 [DATADOG-FORWARDER] 2026-05-05 04:32:31 - INFO - JTL header:
+2026-05-05T04:32:31 04:32:31.608 INFO  o.a.j.r.Summariser - summary +      1 in 00:00:01 =    1.4/s Avg:   508 Min:   508 Max:   508 Err:     0 (0.00%) Active: 1 Started: 1 Finished: 0
+2026-05-05T04:32:31 summary +      1 in 00:00:01 =    1.4/s Avg:   508 Min:   508 Max:   508 Err:     0 (0.00%) Active: 1 Started: 1 Finished: 0
+2026-05-05T04:32:31 04:32:31.610 INFO  o.a.j.t.JMeterThread - Thread is done: UM Add Product User Medium_2 1-1
+2026-05-05T04:32:31 04:32:31.611 INFO  o.a.j.t.JMeterThread - Thread finished: UM Add Product User Medium_2 1-1
+2026-05-05T04:32:31 04:32:31.614 INFO  o.a.j.e.StandardJMeterEngine - Notifying test listeners of end of test
+2026-05-05T04:32:31 04:32:31.614 INFO  o.a.j.s.FileServer - Close: /tmp/SSP_API_Test_Data_3.csv
+2026-05-05T04:32:31 04:32:31.616 INFO  o.a.j.r.Summariser - summary =      1 in 00:00:01 =    1.3/s Avg:   508 Min:   508 Max:   508 Err:     0 (0.00%)
+2026-05-05T04:32:31 summary =      1 in 00:00:01 =    1.3/s Avg:   508 Min:   508 Max:   508 Err:     0 (0.00%)
+2026-05-05T04:32:31 Tidying up ...    @ 2026 May 5 04:32:31 GMT (1777955551617)
+2026-05-05T04:32:31 ... end of run
+2026-05-05T04:32:31 [DATADOG-FORWARDER] 2026-05-05 04:32:31 - WARNING - Failed to parse line: invalid literal for int() with base 10: 'timeStamp' - Line: timeStamp,elapsed,label,responseCode,responseMessage,threadName,dataType,success,failureMessage,byte
+2026-05-05T04:32:33 ==========================================
+2026-05-05T04:32:33 [DATADOG] Waiting for forwarder to complete
+2026-05-05T04:32:33 ==========================================
+2026-05-05T04:32:33 [DATADOG] Giving forwarder 15 seconds to send final metrics...
+2026-05-05T04:32:38 [DATADOG-FORWARDER] 2026-05-05 04:32:38 - INFO - 403 POST https://api.datadoghq.com/api/v1/series (53.7305ms)
+2026-05-05T04:32:38 [DATADOG-FORWARDER] 2026-05-05 04:32:38 - ERROR - [ERROR] Error sending metrics to Datadog: Invalid JSON response: b'Invalid API Key'
+2026-05-05T04:32:48 [DATADOG] Stopping forwarder (PID: 117)...
+2026-05-05T04:32:49  [DATADOG] Forwarder stopped gracefully
+2026-05-05T04:32:49  [SUCCESS] JMeter test completed - results file created
+2026-05-05T04:32:49 ==========================================
+2026-05-05T04:32:49 [UPLOAD] Uploading Results to S3
+2026-05-05T04:32:49 ==========================================
+2026-05-05T04:32:49   [UPLOAD] /tmp/results-0.jtl
+2026-05-05T04:32:50 Completed 562 Bytes/562 Bytes (4.9 KiB/s) with 1 file(s) remainingupload: ../tmp/results-0.jtl to s3://jmeter-framework-results/test-20260505-043116-224/ssp-api-test/container-0/results-0.jtl
+2026-05-05T04:32:50    [SUCCESS] Uploaded to: s3://jmeter-framework-results/test-20260505-043116-224/ssp-api-test/container-0/results-0.jtl
