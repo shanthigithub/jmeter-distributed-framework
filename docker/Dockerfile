@@ -263,14 +263,20 @@ RUN cd /jmeter/java \
 # Copy ONLY essential Healenium/WebDriverManager JARs for JSR223 (avoid conflicts)
 # Note: Selenium JARs already installed in /opt/jmeter/lib (lines 126-176)
 RUN cd /root/.m2/repository \
-    && echo "📦 Copying essential Healenium JARs to JMeter lib..." \
-    && find com/epam/healenium -name "*.jar" -path "*/3.4.5/*" -exec cp -v {} /opt/jmeter/lib/ext/ \; 2>/dev/null || true \
+    && echo "📦 Listing available Healenium modules in Maven cache..." \
+    && ls -la com/epam/healenium/ 2>/dev/null || echo "Healenium directory not found" \
+    && echo "📦 Copying Healenium JARs to JMeter lib..." \
+    && find com/epam/healenium -type f -name "*.jar" 2>/dev/null | while read jar; do \
+        echo "Found: $jar"; \
+        cp -v "$jar" /opt/jmeter/lib/ext/ 2>/dev/null || true; \
+    done \
     && cp -v io/github/bonigarcia/webdrivermanager/5.6.2/*.jar /opt/jmeter/lib/ext/ 2>/dev/null || true \
     && cp -v org/apache/commons/commons-compress/*/commons-compress-*.jar /opt/jmeter/lib/ext/ 2>/dev/null || true \
     && cp -v com/google/code/gson/gson/*/gson-*.jar /opt/jmeter/lib/ext/ 2>/dev/null || true \
     && cp -v com/typesafe/config/*/config-*.jar /opt/jmeter/lib/ext/ 2>/dev/null || true \
-    && echo "✅ All Healenium 3.4.5 JARs + WebDriverManager + dependencies available for JSR223 samplers" \
-    && echo "   Note: Selenium JARs already present in /opt/jmeter/lib"
+    && echo "✅ Healenium + WebDriverManager + dependencies copied" \
+    && echo "📋 Final JAR list in /opt/jmeter/lib/ext/:" \
+    && ls -la /opt/jmeter/lib/ext/ | grep -E "(healenium|webdriver|compress|gson|config)" || true
 
 # Copy entrypoint script
 COPY docker/entrypoint.sh /entrypoint.sh
