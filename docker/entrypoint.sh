@@ -709,6 +709,10 @@ fi
 
 echo ""
 
+# CRITICAL: Disable exit-on-error NOW to ensure uploads always happen
+# Even if test failed or subsequent commands fail, we MUST upload results
+set +e
+
 # Wait for Datadog forwarder to finish sending buffered metrics
 if [ -n "$FORWARDER_PID" ]; then
     echo "=========================================="
