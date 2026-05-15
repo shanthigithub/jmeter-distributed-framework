@@ -810,7 +810,8 @@ echo ""
 # Process screenshots first to ensure they're uploaded
 if [ -d "/tmp/screenshots" ]; then
     echo "[UPLOAD] Processing screenshots from /tmp/screenshots..."
-    find /tmp/screenshots -name "*.png" | while read -r screenshot_file; do
+    # Use process substitution to avoid subshell (pipe would lose variable updates)
+    while read -r screenshot_file; do
         if [ -f "$screenshot_file" ]; then
             filename=$(basename "$screenshot_file")
             s3_key="${RESULTS_PREFIX}/container-${CONTAINER_ID}/screenshots/${filename}"
@@ -824,7 +825,7 @@ if [ -d "/tmp/screenshots" ]; then
                 echo "     Failed to upload screenshot"
             fi
         fi
-    done
+    done < <(find /tmp/screenshots -name "*.png")
     echo ""
 fi
 
