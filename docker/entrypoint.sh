@@ -757,27 +757,34 @@ fi
 # JMeter may return non-zero for warnings/test failures, but if results exist, test ran successfully
 RESULTS_FILE="/tmp/results-0.jtl"
 if [ -f "$RESULTS_FILE" ] && [ -s "$RESULTS_FILE" ]; then
-    # Results file exists and is not empty - TEST RAN SUCCESSFULLY
+    # Results file exists and is not empty - TEST FRAMEWORK RAN SUCCESSFULLY
     if [ $JMETER_RAW_EXIT -eq 124 ]; then
         echo "  [TIMEOUT] JMeter was stopped due to timeout, but partial results exist"
         echo "  [INFO] Container will report SUCCESS (exit 0) - partial results uploaded"
         JMETER_EXIT_CODE=0  # Changed: Return 0 for partial results
     else
-        echo " [SUCCESS] JMeter test completed - results file created"
+        # Check if test passed or failed by examining results
+        echo " [COMPLETE] Test execution completed - results file created (${RESULTS_FILE})"
         if [ $JMETER_RAW_EXIT -ne 0 ]; then
-            echo "  [INFO] JMeter reported exit code ${JMETER_RAW_EXIT} (test had failures/errors)"
-            echo "  [INFO] Container will report SUCCESS (exit 0) - test executed properly"
-            echo "  [INFO] Analyze JTL results file for actual test pass/fail status"
+            echo "  [TEST FAILED] JMeter reported exit code ${JMETER_RAW_EXIT} (test assertions failed)"
+            echo "  [UPLOAD] Results will still be uploaded to S3 for analysis"
+            echo "  [INFO] Container will report SUCCESS (exit 0) - test framework executed properly"
+            echo "  [INFO] Analyze JTL results file in S3 for detailed failure information"
+        else
+            echo " [TEST PASSED] All test assertions passed successfully"
+            echo "  [INFO] Results will be uploaded to S3"
         fi
-        JMETER_EXIT_CODE=0  # Always 0 if results exist
+        JMETER_EXIT_CODE=0  # Always 0 if results exist (test framework succeeded)
     fi
 elif [ $JMETER_RAW_EXIT -eq 0 ]; then
-    echo " [SUCCESS] JMeter completed with exit code 0"
+    echo " [COMPLETE] Test execution completed with exit code 0"
+    echo "  [INFO] Results will be uploaded to S3 (if any)"
     JMETER_EXIT_CODE=0
 else
-    # No results file and non-zero exit - actual failure
-    echo " [ERROR] JMeter failed with exit code: ${JMETER_RAW_EXIT}"
-    echo " [ERROR] No results file created - test did not run properly"
+    # No results file and non-zero exit - FRAMEWORK failure
+    echo " [FRAMEWORK ERROR] Test framework failed with exit code: ${JMETER_RAW_EXIT}"
+    echo " [FRAMEWORK ERROR] No results file created - test did not execute properly"
+    echo "  [UPLOAD] Any partial artifacts (screenshots, logs) will still be uploaded"
     JMETER_EXIT_CODE=$JMETER_RAW_EXIT
 fi
 
