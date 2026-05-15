@@ -836,6 +836,10 @@ if [ -d "/tmp/screenshots" ]; then
     echo ""
 fi
 
+# CRITICAL FIX: Disable 'set -e' for upload section to ensure all files upload even if some commands fail
+# Without this, a single failed ls or missing file pattern would exit the script before JTL upload!
+set +e  # Disable exit-on-error for upload section
+
 # Upload other result files
 echo "[UPLOAD] Processing other result files..."
 echo "[DEBUG] Checking for files matching patterns..."
@@ -866,6 +870,9 @@ echo "   Uploaded: ${uploaded_count} files"
 if [ $failed_count -gt 0 ]; then
     echo "    Failed: ${failed_count} files"
 fi
+
+# Re-enable exit-on-error now that uploads are complete
+set -e
 
 echo ""
 echo "=========================================="
