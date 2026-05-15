@@ -629,17 +629,21 @@ else
     echo ""
 fi
 
-# Calculate timeout: estimated duration + 30 minute buffer
+# Calculate timeout: estimated duration + test buffer + UPLOAD buffer
 ESTIMATED_DURATION=${ESTIMATED_DURATION_SECONDS:-3600}  # Default 1 hour if not set
-TIMEOUT_BUFFER=$((30 * 60))  # 30 minutes in seconds
-TASK_TIMEOUT=$((ESTIMATED_DURATION + TIMEOUT_BUFFER))
+TEST_TIMEOUT_BUFFER=$((30 * 60))  # 30 minutes buffer for test execution
+UPLOAD_BUFFER=$((10 * 60))  # 10 minutes buffer for uploads (CRITICAL - prevents early container kill)
+TEST_TIMEOUT=$((ESTIMATED_DURATION + TEST_TIMEOUT_BUFFER))  # Timeout for test execution only
+TASK_TIMEOUT=$((ESTIMATED_DURATION + TEST_TIMEOUT_BUFFER + UPLOAD_BUFFER))  # Total task runtime
 
 echo "=========================================="
 echo "[TIMEOUT] Protection Settings"
 echo "=========================================="
 echo "Estimated Test Duration: ${ESTIMATED_DURATION}s ($(($ESTIMATED_DURATION / 60))m)"
-echo "Timeout Buffer: ${TIMEOUT_BUFFER}s ($(($TIMEOUT_BUFFER / 60))m)"
-echo "Maximum Task Runtime: ${TASK_TIMEOUT}s ($(($TASK_TIMEOUT / 60))m)"
+echo "Test Timeout Buffer: ${TEST_TIMEOUT_BUFFER}s ($(($TEST_TIMEOUT_BUFFER / 60))m)"
+echo "Upload Buffer: ${UPLOAD_BUFFER}s ($(($UPLOAD_BUFFER / 60))m) - ENSURES uploads complete"
+echo "Test Maximum Runtime: ${TEST_TIMEOUT}s ($(($TEST_TIMEOUT / 60))m)"
+echo "Task Maximum Runtime: ${TASK_TIMEOUT}s ($(($TASK_TIMEOUT / 60))m) - TOTAL allowed"
 echo ""
 
 # Execute test with timeout protection (route based on file extension)
@@ -647,18 +651,19 @@ echo "=========================================="
 if [ "$FILE_EXTENSION" = "jmx" ]; then
     echo "[RUN] Running JMeter Test (with timeout protection)"
     echo "=========================================="
-    echo "[COMMAND] timeout ${TASK_TIMEOUT} $@"
+    echo "[COMMAND] timeout ${TEST_TIMEOUT} $@"
     echo ""
     
     # BusyBox timeout syntax: timeout SECONDS COMMAND (no -t flag needed)
     # Exit codes: 0 = success, 124 = timeout, others = JMeter error
-    timeout ${TASK_TIMEOUT} "$@" 2>&1
+    # NOTE: Using TEST_TIMEOUT (not TASK_TIMEOUT) to leave time for uploads after test
+    timeout ${TEST_TIMEOUT} "$@" 2>&1
     JMETER_RAW_EXIT=$?
     
 elif [ "$FILE_EXTENSION" = "py" ]; then
     echo "[RUN] Running Playwright Test (with timeout protection)"
     echo "=========================================="
-    echo "[COMMAND] timeout ${TASK_TIMEOUT} python3 ${TEST_FILE}"
+    echo "[COMMAND] timeout ${TEST_TIMEOUT} python3 ${TEST_FILE}"
     echo ""
     echo "  [INFO] JMeter JVM will NOT start (Playwright runs directly)"
     echo "  [INFO] Memory saved: ~512 MB (no JMeter overhead)"
@@ -672,14 +677,14 @@ elif [ "$FILE_EXTENSION" = "py" ]; then
     export CONTAINER_ID
     export RESULTS_PREFIX
     
-    # Run Python script with timeout
-    timeout ${TASK_TIMEOUT} python3 "${TEST_FILE}" 2>&1
+    # Run Python script with timeout (using TEST_TIMEOUT to leave time for uploads)
+    timeout ${TEST_TIMEOUT} python3 "${TEST_FILE}" 2>&1
     JMETER_RAW_EXIT=$?
     
 elif [ "$FILE_EXTENSION" = "js" ]; then
     echo "[RUN] Running JavaScript Playwright Test (with timeout protection)"
     echo "=========================================="
-    echo "[COMMAND] timeout ${TASK_TIMEOUT} node ${TEST_FILE}"
+    echo "[COMMAND] timeout ${TEST_TIMEOUT} node ${TEST_FILE}"
     echo ""
     echo "  [INFO] JMeter JVM will NOT start (Playwright runs directly)"
     echo "  [INFO] Memory saved: ~512 MB (no JMeter overhead)"
@@ -697,8 +702,8 @@ elif [ "$FILE_EXTENSION" = "js" ]; then
     # Set NODE_PATH so Node.js can find modules installed in /jmeter
     export NODE_PATH=/jmeter/node_modules
     
-    # Run Node.js script with timeout
-    timeout ${TASK_TIMEOUT} node "${TEST_FILE}" 2>&1
+    # Run Node.js script with timeout (using TEST_TIMEOUT to leave time for uploads)
+    timeout ${TEST_TIMEOUT} node "${TEST_FILE}" 2>&1
     JMETER_RAW_EXIT=$?
 fi
 
