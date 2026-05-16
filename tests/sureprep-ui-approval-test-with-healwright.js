@@ -54,8 +54,8 @@ async function getSalesforceCredentials() {
     
     const secret = JSON.parse(response.SecretString);
     
-    // Decode base64 private key
-    const privateKeyPem = Buffer.from(secret.SF_PRIVATE_KEY_PEM_B64, 'base64').toString('utf-8');
+    // Clean up private key (trim whitespace, it's already in PEM format)
+    const privateKeyPem = secret.SF_PRIVATE_KEY_PEM_B64.trim();
     
     return {
       consumerKey: secret.SF_CONSUMER_KEY,

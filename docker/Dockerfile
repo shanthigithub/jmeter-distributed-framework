@@ -244,7 +244,9 @@ RUN cd /jmeter && npm init -y \
     && npm install playwright@1.40.0 \
     && npm install @aws-sdk/client-s3 \
     && npm install @aws-sdk/client-secrets-manager \
+    && npm install healwright@1.7.0 \
     && echo "✅ Playwright installed locally in /jmeter for test scripts" \
+    && echo "✅ Healwright (AI-powered self-healing locators) installed" \
     && echo "✅ Custom self-healing locators available via lib/self-healing-locators.js"
 
 # Copy Java/TestNG framework files  
