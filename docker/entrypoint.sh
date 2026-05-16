@@ -849,6 +849,27 @@ fi
 # Without this, a single failed ls or missing file pattern would exit the script before JTL upload!
 set +e  # Disable exit-on-error for upload section
 
+# Upload generated API tests first (if they exist)
+if [ -d "/jmeter/generated-api-tests" ]; then
+    echo "[UPLOAD] Processing generated API tests from /jmeter/generated-api-tests..."
+    for api_file in /jmeter/generated-api-tests/*; do
+        if [ -f "$api_file" ]; then
+            filename=$(basename "$api_file")
+            s3_key="${RESULTS_PREFIX}/container-${CONTAINER_ID}/generated-api-tests/${filename}"
+            
+            echo "  [API-TEST] Uploading: ${filename}"
+            if upload_results "$api_file" "$s3_key"; then
+                ((uploaded_count++))
+                echo "     Uploaded to: s3://${RESULTS_BUCKET}/${s3_key}"
+            else
+                ((failed_count++))
+                echo "     Failed to upload API test file"
+            fi
+        fi
+    done
+    echo ""
+fi
+
 # Upload other result files
 echo "[UPLOAD] Processing other result files..."
 echo "[DEBUG] Checking for files matching patterns..."
