@@ -2,6 +2,7 @@
 # Debian-based for Playwright compatibility, optimized for AWS Batch with S3 dynamic loading
 # Updated: Force rebuild to ensure Playwright is installed locally in /jmeter
 # Trigger rebuild for commit efc4f18f (fix ECS image tagging)
+# Rebuild: Install AWS SDK for Secrets Manager (@aws-sdk/client-secrets-manager)
 
 FROM ubuntu:22.04
 
@@ -178,6 +179,7 @@ RUN cd ${JMETER_HOME}/lib \
 # Install Node.js Playwright package (k6-compatible API!)
 RUN npm install -g playwright@1.40.0 \
     && npm install -g @aws-sdk/client-s3 \
+    && npm install -g @aws-sdk/client-secrets-manager \
     && echo "✅ Node.js Playwright installed"
 
 # Install Playwright's own Chromium browser
@@ -241,6 +243,7 @@ COPY healwright.config.js /jmeter/healwright.config.js
 RUN cd /jmeter && npm init -y \
     && npm install playwright@1.40.0 \
     && npm install @aws-sdk/client-s3 \
+    && npm install @aws-sdk/client-secrets-manager \
     && echo "✅ Playwright installed locally in /jmeter for test scripts" \
     && echo "✅ Custom self-healing locators available via lib/self-healing-locators.js"
 
