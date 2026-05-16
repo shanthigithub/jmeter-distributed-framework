@@ -995,9 +995,8 @@ async function runUser(userId, iterationNumber, { page, healer }) {
     if (apiGen) {
       try {
         console.log('\n🎬 Generating API test scripts from captured calls...');
-        const generated = await apiGen.generateAllFormats();
-        console.log(`✅ Generated ${generated.length} API test files`);
-        generated.forEach(file => console.log(`   📄 ${file}`));
+        await apiGen.saveGeneratedTests();
+        console.log('✅ API test generation complete!');
       } catch (genError) {
         console.error(`⚠️  API generation failed: ${genError.message}`);
       }
