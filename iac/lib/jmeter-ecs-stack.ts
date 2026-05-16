@@ -174,6 +174,15 @@ export class JMeterEcsStack extends cdk.Stack {
       resources: [`${resultsBucket.bucketArn}/*`],
     }));
 
+    // Grant Secrets Manager access for Salesforce credentials
+    taskRole.addToPolicy(new iam.PolicyStatement({
+      sid: 'SecretsManagerRead',
+      actions: ['secretsmanager:GetSecretValue'],
+      resources: [
+        `arn:aws:secretsmanager:${this.region}:${this.account}:secret:k6-framework/salesforce-jwt-*`,
+      ],
+    }));
+
     // Task Execution Role - pulls ECR images, writes CloudWatch logs, reads secrets
     const taskExecutionRole = new iam.Role(this, 'TaskExecutionRole', {
       assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
