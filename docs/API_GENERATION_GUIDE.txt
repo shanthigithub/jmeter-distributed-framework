@@ -1,0 +1,467 @@
+================================================================================
+                   SMART API GENERATOR - USAGE GUIDE
+================================================================================
+
+OVERVIEW
+--------
+The Smart API Generator automatically captures API calls from Playwright browser 
+tests and generates 3 ready-to-run API test scripts:
+
+1. Playwright API test (10-100 users)
+2. k6 load test (100-1,000+ users)  
+3. JMeter .jmx file (100-10,000+ users)
+
+Features:
+✓ Automatic transaction grouping
+✓ Parallel API call detection
+✓ Dynamic value correlation extraction
+✓ Zero impact on your existing test code
+
+
+================================================================================
+QUICK START
+================================================================================
+
+1. INSTALL (if not already installed)
+   ---------------------------------
+   npm install playwright @playwright/test
+
+
+2. CREATE YOUR TEST WITH API GENERATION
+   ------------------------------------
+   See: tests/example-api-generation-integration.js
+
+   const { SmartAPIGeneratorWithJMeter } = require('../lib/smart-api-generator-with-jmeter');
+
+   async function yourTest() {
+     const page = await browser.newPage();
+     
+     // Enable API capture
+     const apiGen = new SmartAPIGeneratorWithJMeter();
+     await apiGen.captureFromBrowser(page);
+     
+     // Your test steps (wrap in transactions)
+     apiGen.startTransaction('Login');
+     await page.goto('...');
+     // ... your test code ...
+     apiGen.endTransaction();
+     
+     // Save generated tests
+     await apiGen.saveGeneratedTests();
+   }
+
+
+3. RUN YOUR TEST
+   --------------
+   node tests/example-api-generation-integration.js
+
+   Output:
+   ✅ generated-api-tests/playwright-api-test.js
+   ✅ generated-api-tests/k6-load-test.js
+   ✅ generated-api-tests/jmeter-api-test.jmx
+   ✅ generated-api-tests/api-analysis.json
+
+
+4. RUN GENERATED API TESTS
+   -------------------------
+   
+   # Playwright (10-100 users)
+   PARALLEL_USERS=10 ITERATIONS=1 ACCESS_TOKEN=xxx \
+     node generated-api-tests/playwright-api-test.js
+   
+   # k6 (100-1000+ users)
+   k6 run -e VUS=100 -e DURATION=5m -e ACCESS_TOKEN=xxx \
+     generated-api-tests/k6-load-test.js
+   
+   # JMeter (100-10,000+ users)
+   jmeter -n -t generated-api-tests/jmeter-api-test.jmx \
+     -Jthreads=100 -Jrampup=60 -Jduration=300 \
+     -JACCESS_TOKEN=xxx
+
+
+================================================================================
+INTEGRATION INTO EXISTING TEST
+================================================================================
+
+OPTION A: MINIMAL INTEGRATION (3 lines)
+----------------------------------------
+
+// 1. Import at top
+const { SmartAPIGeneratorWithJMeter } = require('../lib/smart-api-generator-with-jmeter');
+
+async function runUser(userId, iteration, { page, healer }) {
+  
+  // 2. Enable for first user only
+  let apiGen;
+  if (userId === 1 && iteration === 1) {
+    apiGen = new SmartAPIGeneratorWithJMeter();
+    await apiGen.captureFromBrowser(page);
+  }
+
+  try {
+    // YOUR EXISTING TEST CODE (add transaction markers)
+    apiGen?.startTransaction('Step_001_Authentication');
+    const authData = await getSalesforceAccessToken();
+    await page.goto(`${authData.instance_url}/...`);
+    apiGen?.endTransaction();
+    
+    apiGen?.startTransaction('Step_002_Create_Account');
+    await page.click('a[title="New"]');
+    // ... more steps ...
+    apiGen?.endTransaction();
+    
+    // 3. Save at end
+    if (apiGen) {
+      await apiGen.saveGeneratedTests();
+    }
+    
+  } catch (error) {
+    // your error handling
+  }
+}
+
+
+OPTION B: ALWAYS-ON (automatic per test run)
+---------------------------------------------
+
+// In your test runner/framework:
+const config = {
+  enableAPIGeneration: process.env.GENERATE_API === 'true',
+  // ... other config
+};
+
+// Then in test:
+let apiGen = config.enableAPIGeneration ? new SmartAPIGeneratorWithJMeter() : null;
+if (apiGen) await apiGen.captureFromBrowser(page);
+
+// Usage: GENERATE_API=true node tests/your-test.js
+
+
+================================================================================
+TRANSACTION GROUPING BEST PRACTICES
+================================================================================
+
+GOOD GROUPING (Logical Business Steps)
+---------------------------------------
+apiGen.startTransaction('Login_Authentication');
+  // All steps related to login
+  await page.goto('...');
+  await page.fill('#username', '...');
+  await page.fill('#password', '...');
+  await page.click('#Login');
+apiGen.endTransaction();
+
+apiGen.startTransaction('Create_New_Account');
+  // All steps related to account creation
+  await page.click('a[title="Accounts"]');
+  await page.click('a[title="New"]');
+  await page.fill('input[name="Name"]', '...');
+  await page.click('button[name="SaveEdit"]');
+apiGen.endTransaction();
+
+
+BAD GROUPING (Too Fine-Grained)
+--------------------------------
+❌ DON'T DO THIS:
+apiGen.startTransaction('Click_Accounts');
+await page.click('a[title="Accounts"]');
+apiGen.endTransaction();
+
+apiGen.startTransaction('Click_New');
+await page.click('a[title="New"]');
+apiGen.endTransaction();
+
+
+OPTIMAL TRANSACTION SIZE
+-------------------------
+✓ 3-10 API calls per transaction
+✓ Represents a complete user action
+✓ Can be measured/monitored independently
+✓ Makes sense from business perspective
+
+
+================================================================================
+PARALLEL CALL DETECTION
+================================================================================
+
+HOW IT WORKS
+------------
+The generator automatically detects API calls that happen within 100ms of each
+other and groups them as "parallel" in the generated scripts.
+
+Example:
+  User clicks "Load Dashboard"
+  Browser makes these API calls:
+    t=0ms:   GET /api/user/profile
+    t=23ms:  GET /api/notifications     ← Within 100ms = PARALLEL
+    t=45ms:  GET /api/recent-items      ← Within 100ms = PARALLEL
+    t=500ms: GET /api/next-thing        ← >100ms = SEQUENTIAL
+
+Generated code will use:
+  - Playwright: Promise.all([...])
+  - k6: http.batch({...})
+  - JMeter: Parallel Controller
+
+
+CUSTOMIZING THRESHOLD
+----------------------
+const apiGen = new SmartAPIGeneratorWithJMeter({
+  parallelThreshold: 150  // API calls within 150ms = parallel
+});
+
+
+================================================================================
+CORRELATION DETECTION
+================================================================================
+
+AUTOMATIC EXTRACTION
+--------------------
+The generator automatically detects and extracts dynamic values like:
+
+✓ Salesforce IDs (18-character alphanumeric)
+✓ Access tokens (50+ characters)
+✓ Session IDs
+✓ Any ID in response that's reused in subsequent requests
+
+Example:
+  Step 1: POST /sobjects/Account
+  Response: { "id": "001abc123xyz", "success": true }
+  
+  ✅ Extracted: accountId_1 = "001abc123xyz"
+  
+  Step 2: POST /sobjects/Contact
+  Body: { "AccountId": "001abc123xyz", ... }
+  
+  ✅ Detected correlation and replaced with variable
+
+
+CUSTOM CORRELATION PATTERNS
+----------------------------
+To add custom patterns, edit lib/smart-api-generator-with-jmeter.js:
+
+const patterns = [
+  { 
+    pattern: /^CUSTOM_\d{10}$/,
+    type: 'custom_id',
+    paths: ['customId', 'id']
+  },
+  // ... existing patterns
+];
+
+
+================================================================================
+OUTPUT FILES
+================================================================================
+
+generated-api-tests/
+├── playwright-api-test.js    - Playwright API test (10-100 users)
+├── k6-load-test.js           - k6 load test (100-1,000+ users)
+├── jmeter-api-test.jmx       - JMeter test (100-10,000+ users)
+└── api-analysis.json         - Analysis report
+
+api-analysis.json contains:
+{
+  "generated": "2026-05-16T10:05:00.000Z",
+  "transactions": 15,
+  "totalAPICalls": 127,
+  "parallelGroups": 8,
+  "correlations": 23,
+  "transactionDetails": [...]
+}
+
+
+================================================================================
+RUNNING GENERATED TESTS
+================================================================================
+
+PLAYWRIGHT API TEST
+-------------------
+# Basic run
+ACCESS_TOKEN=xxx node generated-api-tests/playwright-api-test.js
+
+# With load
+PARALLEL_USERS=50 ITERATIONS=10 ACCESS_TOKEN=xxx \
+  node generated-api-tests/playwright-api-test.js
+
+# Custom base URL
+BASE_URL=https://test.salesforce.com \
+  ACCESS_TOKEN=xxx \
+  node generated-api-tests/playwright-api-test.js
+
+
+K6 LOAD TEST
+------------
+# Basic run
+k6 run -e ACCESS_TOKEN=xxx generated-api-tests/k6-load-test.js
+
+# Load test (100 VUs for 5 minutes)
+k6 run \
+  -e VUS=100 \
+  -e DURATION=5m \
+  -e ACCESS_TOKEN=xxx \
+  generated-api-tests/k6-load-test.js
+
+# With reporting
+k6 run \
+  -e VUS=100 \
+  -e DURATION=5m \
+  -e ACCESS_TOKEN=xxx \
+  --out json=results.json \
+  generated-api-tests/k6-load-test.js
+
+
+JMETER TEST
+-----------
+# GUI mode (for editing)
+jmeter -t generated-api-tests/jmeter-api-test.jmx
+
+# CLI mode (for actual testing)
+jmeter -n -t generated-api-tests/jmeter-api-test.jmx \
+  -JACCESS_TOKEN=xxx \
+  -Jthreads=100 \
+  -Jrampup=60 \
+  -Jduration=300 \
+  -l results.jtl \
+  -e -o report/
+
+# Parameters:
+  -Jthreads=100      : 100 virtual users
+  -Jrampup=60        : Ramp up over 60 seconds
+  -Jduration=300     : Run for 300 seconds (5 minutes)
+  -Jiterations=1     : 1 iteration per thread
+
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+PROBLEM: No API calls captured
+-------------------------------
+CAUSE: Test completed too fast or API calls filtered out
+
+FIX 1: Add wait for network idle
+  await page.waitForLoadState('networkidle');
+  
+FIX 2: Check API call patterns in isAPICall() method
+  lib/smart-api-generator-with-jmeter.js:179
+
+
+PROBLEM: Correlations not detected
+-----------------------------------
+CAUSE: Values don't match default patterns
+
+FIX: Add custom patterns in extractCorrelations() method
+  lib/smart-api-generator-with-jmeter.js:244
+
+
+PROBLEM: Too many/few parallel groups
+--------------------------------------
+CAUSE: Threshold too loose/strict
+
+FIX: Adjust parallelThreshold:
+  const apiGen = new SmartAPIGeneratorWithJMeter({
+    parallelThreshold: 150  // Increase from default 100ms
+  });
+
+
+PROBLEM: Generated test fails
+------------------------------
+CAUSE: Missing authentication or wrong base URL
+
+FIX 1: Ensure ACCESS_TOKEN is set correctly
+FIX 2: Check BASE_URL matches your environment
+FIX 3: Review api-analysis.json for issues
+
+
+================================================================================
+ADVANCED USAGE
+================================================================================
+
+CUSTOM OUTPUT DIRECTORY
+-----------------------
+const apiGen = new SmartAPIGeneratorWithJMeter({
+  outputDir: './my-custom-dir'
+});
+
+
+CONDITIONAL GENERATION
+----------------------
+const shouldGenerate = process.env.GENERATE_API === 'true' && userId === 1;
+
+const apiGen = shouldGenerate ? 
+  new SmartAPIGeneratorWithJMeter() : 
+  null;
+
+if (apiGen) await apiGen.captureFromBrowser(page);
+
+
+MULTIPLE TEST VARIANTS
+----------------------
+// Generate different load profiles from same browser test
+await apiGen.saveGeneratedTests(); // Default profile
+
+// Modify thresholds for different scenarios
+apiGen.parallelThreshold = 50; // More aggressive parallel detection
+await apiGen.saveGeneratedTests({ suffix: '-aggressive' });
+
+
+================================================================================
+INTEGRATION WITH YOUR JMETER ECS FRAMEWORK
+================================================================================
+
+The generated JMeter .jmx files work seamlessly with your existing framework:
+
+1. GENERATE FROM BROWSER TEST
+   ---------------------------
+   GENERATE_API=true npm start
+
+2. UPLOAD TO S3
+   -------------
+   aws s3 cp generated-api-tests/jmeter-api-test.jmx \
+     s3://your-test-bucket/tests/api-test.jmx
+
+3. RUN VIA YOUR FRAMEWORK
+   -----------------------
+   Use your existing GitHub Actions workflow or ECS task definition
+   
+   config/api-test.json:
+   {
+     "testFile": "api-test.jmx",
+     "threads": 100,
+     "duration": 300,
+     "rampup": 60
+   }
+
+4. RESULTS
+   ---------
+   Same CloudWatch/Datadog monitoring as your existing tests
+
+
+================================================================================
+BEST PRACTICES
+================================================================================
+
+✓ Run API generation with 1 user, 1 iteration for clean capture
+✓ Use meaningful transaction names (business-focused)
+✓ Group 3-10 API calls per transaction
+✓ Wait for network idle before ending transactions
+✓ Review api-analysis.json after generation
+✓ Test generated scripts locally before deploying
+✓ Keep parallelThreshold at 100ms unless you have specific needs
+✓ Store generated tests in version control (after review)
+
+
+================================================================================
+SUPPORT & DOCUMENTATION
+================================================================================
+
+Files:
+- lib/smart-api-generator-with-jmeter.js  (Main generator class)
+- tests/example-api-generation-integration.js  (Example usage)
+- docs/API_GENERATION_GUIDE.txt  (This file)
+
+For questions or issues, review the code comments in:
+  lib/smart-api-generator-with-jmeter.js
+
+
+================================================================================

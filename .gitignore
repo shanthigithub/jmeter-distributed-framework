@@ -4,6 +4,9 @@ tests/
 data/*.csv
 data/*.txt
 
+# Generated API tests (auto-generated from browser tests)
+generated-api-tests/
+
 # IDE
 .vscode/
 .idea/
