@@ -180,6 +180,7 @@ export class JMeterEcsStack extends cdk.Stack {
       actions: ['secretsmanager:GetSecretValue'],
       resources: [
         `arn:aws:secretsmanager:${this.region}:${this.account}:secret:k6-framework/salesforce-jwt-*`,
+        `arn:aws:secretsmanager:${this.region}:${this.account}:secret:anthropic-api-key-*`,
       ],
     }));
 
