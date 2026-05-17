@@ -18,6 +18,7 @@
     "playwright": "^1.40.0",
     "@aws-sdk/client-s3": "^3.0.0",
     "@aws-sdk/client-secrets-manager": "^3.0.0",
+    "@anthropic-ai/sdk": "^0.30.0",
     "healwright": "^1.7.0"
   }
 }

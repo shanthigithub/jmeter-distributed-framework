@@ -1,0 +1,320 @@
+═══════════════════════════════════════════════════════════════════════════
+  AI-POWERED CORRELATION DETECTION FOR JMETER
+═══════════════════════════════════════════════════════════════════════════
+
+🤖 OVERVIEW
+
+This framework now includes AI-powered correlation detection using Claude AI.
+It intelligently analyzes JMeter test scripts to:
+
+  ✓ Detect dynamic values that need to be extracted
+  ✓ Find where those values are reused in subsequent requests  
+  ✓ Automatically replace hardcoded values with JMeter variables
+  ✓ Generate proper JSONPostProcessor extractors
+
+Similar to Fiddler's AutoCorrelate, but powered by Large Language Models!
+
+═══════════════════════════════════════════════════════════════════════════
+  SETUP
+═══════════════════════════════════════════════════════════════════════════
+
+1. GET CLAUDE API KEY
+   
+   Visit: https://console.anthropic.com/
+   Create account and generate API key
+
+2. INSTALL DEPENDENCIES
+
+   npm install
+
+   This installs @anthropic-ai/sdk required for AI analysis
+
+3. SET ENVIRONMENT VARIABLE
+
+   export ANTHROPIC_API_KEY="sk-ant-api03-..."
+
+   Or create .env file:
+   ANTHROPIC_API_KEY=sk-ant-api03-...
+
+═══════════════════════════════════════════════════════════════════════════
+  USAGE
+═══════════════════════════════════════════════════════════════════════════
+
+METHOD 1: POST-PROCESS EXISTING JMETER FILES
+─────────────────────────────────────────────
+
+If you already have a JMeter file with missing correlations:
+
+   node scripts/ai-enhance-jmeter-correlations.js tests/my-test.jmx
+
+Output:
+   - tests/my-test-ai-enhanced.jmx (enhanced JMeter file)
+   - tests/my-test-ai-enhanced-correlation-report.json (analysis report)
+
+Example:
+
+   $ node scripts/ai-enhance-jmeter-correlations.js tests/jmeter-api-test.jmx
+
+   🚀 AI-Enhanced Correlation Analysis
+      Input:  tests/jmeter-api-test.jmx
+      Output: tests/jmeter-api-test-ai-enhanced.jmx
+
+   📖 Read JMeter file: 1234.5 KB
+   📊 Extracted 45 API calls from JMeter file
+
+   🤖 AI Correlation Analysis Starting...
+      Analyzing 45 API calls with Claude AI
+
+   ✅ AI Analysis Complete!
+      Found 8 correlations
+
+      Correlation 1:
+      └─ Variable: aura_token
+      └─ Extract from: Request #2
+      └─ Used in: 3, 4, 5, 6, 7, 8
+      └─ JSON Path: $.access_token
+
+      Correlation 2:
+      └─ Variable: session_id
+      └─ Extract from: Request #1  
+      └─ Used in: 2, 3, 4
+      └─ JSON Path: $.sessionId
+
+   🔧 Applying 8 AI-detected correlations to JMeter...
+      ✓ Replaced aura_token in request #3
+      ✓ Replaced aura_token in request #4
+      ...
+
+   ✅ Enhanced JMeter file saved: tests/jmeter-api-test-ai-enhanced.jmx
+
+   📈 Summary:
+      API Calls Analyzed: 45
+      Correlations Found: 8
+      File Size: 1234.5 KB → 1250.2 KB
+
+   ✨ Done! Open tests/jmeter-api-test-ai-enhanced.jmx in JMeter
+
+METHOD 2: INTEGRATE WITH API GENERATOR
+───────────────────────────────────────
+
+When generating tests from Playwright, the AI analyzer can be integrated
+directly. (Future enhancement - see smart-api-generator-with-jmeter.js)
+
+═══════════════════════════════════════════════════════════════════════════
+  WHAT THE AI DETECTS
+═══════════════════════════════════════════════════════════════════════════
+
+The AI looks for common correlation patterns:
+
+✓ SESSION TOKENS
+  - access_token, sessionId, session_id
+  - JWT tokens (eyJ...)
+  - Bearer tokens
+
+✓ SALESFORCE-SPECIFIC
+  - aura.token (Aura framework tokens)
+  - fwuid (framework unique identifier)
+  - context tokens
+  - 18-character Salesforce record IDs
+
+✓ SECURITY TOKENS
+  - CSRF tokens
+  - Nonce values
+  - API keys
+
+✓ DYNAMIC VALUES
+  - Timestamps
+  - Sequence numbers
+  - Transaction IDs
+
+═══════════════════════════════════════════════════════════════════════════
+  EXAMPLE: BEFORE & AFTER
+═══════════════════════════════════════════════════════════════════════════
+
+BEFORE (Hardcoded values):
+──────────────────────────
+
+<HTTPSamplerProxy testname="POST /aura">
+  <stringProp name="Argument.value">
+    aura.token=eyJub25jZSI6IjFKOEZvNlBQVUxJdGZkcjNXMG5RT2E...
+  </stringProp>
+</HTTPSamplerProxy>
+
+<!-- Extractor exists but not used -->
+<JSONPostProcessor testname="Extract session_token_1">
+  <stringProp name="JSONPostProcessor.referenceNames">session_token_1</stringProp>
+  <stringProp name="JSONPostProcessor.jsonPathExprs">$.access_token</stringProp>
+</JSONPostProcessor>
+
+AFTER (AI-Enhanced):
+────────────────────
+
+<HTTPSamplerProxy testname="POST /aura">
+  <stringProp name="Argument.value">
+    aura.token=${aura_token}
+  </stringProp>
+</HTTPSamplerProxy>
+
+<!-- AI-generated extractor with proper naming -->
+<JSONPostProcessor testname="AI: Extract aura_token">
+  <stringProp name="JSONPostProcessor.referenceNames">aura_token</stringProp>
+  <stringProp name="JSONPostProcessor.jsonPathExprs">$.access_token</stringProp>
+  <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+  <stringProp name="JSONPostProcessor.defaultValues">AI_EXTRACTION_FAILED</stringProp>
+</JSONPostProcessor>
+
+═══════════════════════════════════════════════════════════════════════════
+  VERIFICATION
+═══════════════════════════════════════════════════════════════════════════
+
+After AI enhancement:
+
+1. OPEN IN JMETER
+   
+   Open the -ai-enhanced.jmx file in JMeter GUI
+
+2. CHECK EXTRACTORS
+
+   Look for JSONPostProcessor elements with "AI: Extract" prefix
+   Verify they're attached to the correct requests
+
+3. CHECK VARIABLE USAGE
+
+   Search for ${aura_token}, ${session_id}, etc.
+   Verify hardcoded values are replaced
+
+4. RUN TEST
+
+   Run with 2+ threads to verify each thread gets its own values
+   Check View Results Tree to see variable values
+
+5. REVIEW REPORT
+
+   Open the -correlation-report.json file
+   See detailed analysis of what was found
+
+═══════════════════════════════════════════════════════════════════════════
+  TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════════════════
+
+ISSUE: "ANTHROPIC_API_KEY not set"
+FIX: Set environment variable with your Claude API key
+
+ISSUE: "No correlations detected"
+REASON: Your test may already have proper correlations, or responses
+        aren't captured in the JMeter file
+FIX: Use this during test generation from Playwright, not on existing
+     JMeter files without response data
+
+ISSUE: AI finds wrong correlations
+FIX: Review the correlation report and manually adjust the JMeter file.
+     AI is smart but not perfect - verify critical correlations
+
+ISSUE: Some values still hardcoded
+REASON: AI may have missed edge cases or URL-encoded variations
+FIX: Manually add extractors or run the script multiple times
+
+═══════════════════════════════════════════════════════════════════════════
+  COST ESTIMATION
+═══════════════════════════════════════════════════════════════════════════
+
+Claude API Pricing (as of 2024):
+  - Input: $3 per million tokens
+  - Output: $15 per million tokens
+
+Typical usage:
+  - 50 API calls: ~$0.05-0.10 per analysis
+  - 100 API calls: ~$0.10-0.20 per analysis
+
+Very affordable for occasional use!
+
+═══════════════════════════════════════════════════════════════════════════
+  BEST PRACTICES
+═══════════════════════════════════════════════════════════════════════════
+
+1. USE DURING DEVELOPMENT
+   Run AI analysis during test development, not in CI/CD
+
+2. REVIEW AI SUGGESTIONS
+   Always review AI-detected correlations before using in production
+
+3. VERSION CONTROL
+   Keep both original and AI-enhanced files in version control
+   Use meaningful commit messages about correlation changes
+
+4. DOCUMENT CORRELATIONS  
+   Add comments in JMeter explaining why each correlation exists
+
+5. TEST THOROUGHLY
+   Run enhanced tests with multiple threads to verify correlations work
+
+═══════════════════════════════════════════════════════════════════════════
+  ADVANCED: PROGRAMMATIC USAGE
+═══════════════════════════════════════════════════════════════════════════
+
+Use the AI analyzer directly in your code:
+
+const { AICorrelationAnalyzer } = require('./lib/ai-correlation-analyzer');
+
+async function analyzeTest() {
+  const analyzer = new AICorrelationAnalyzer(process.env.ANTHROPIC_API_KEY);
+  
+  // Add API calls
+  analyzer.addAPICall({
+    method: 'POST',
+    url: 'https://api.example.com/login',
+    body: '{"username":"test"}',
+    responseBody: { access_token: 'abc123' },
+    status: 200
+  });
+  
+  analyzer.addAPICall({
+    method: 'GET', 
+    url: 'https://api.example.com/data',
+    body: null,
+    responseBody: { data: [...] },
+    status: 200,
+    headers: { 'Authorization': 'Bearer abc123' }
+  });
+  
+  // Analyze
+  const correlations = await analyzer.analyzeCorrelations();
+  
+  // Generate report
+  await analyzer.generateReport('./output/report.json');
+}
+
+═══════════════════════════════════════════════════════════════════════════
+  LIMITATIONS
+═══════════════════════════════════════════════════════════════════════════
+
+- Requires response data (not available in pure JMeter files)
+- Best used during test generation from Playwright
+- May miss complex correlation patterns
+- Requires manual review for production use
+- Costs API credits per analysis
+
+═══════════════════════════════════════════════════════════════════════════
+  FUTURE ENHANCEMENTS
+═══════════════════════════════════════════════════════════════════════════
+
+Planned features:
+
+□ Direct integration with Playwright test generation
+□ Support for regex-based extractors  
+□ Correlation templates for common patterns
+□ Batch processing of multiple JMeter files
+□ Visual correlation flow diagrams
+□ Automatic test validation after correlation
+
+═══════════════════════════════════════════════════════════════════════════
+  SUPPORT
+═══════════════════════════════════════════════════════════════════════════
+
+For issues or questions:
+1. Check this guide
+2. Review correlation report JSON for details
+3. Examine Claude API error messages
+4. Open GitHub issue with sample (sanitized) data
+
+═══════════════════════════════════════════════════════════════════════════
