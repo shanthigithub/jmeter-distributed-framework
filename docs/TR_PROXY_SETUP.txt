@@ -1,0 +1,217 @@
+================================================================================
+         THOMSON REUTERS PROXY CONFIGURATION FOR AI CORRELATION
+================================================================================
+
+OVERVIEW
+--------
+The AI correlation analyzer can be configured to use Thomson Reuters' internal
+Anthropic proxy instead of the public Anthropic API. This allows you to use
+your corporate credentials and stay within TR's security boundaries.
+
+================================================================================
+CONFIGURATION OPTIONS
+================================================================================
+
+OPTION 1: Use Thomson Reuters Proxy (Recommended for TR employees)
+-------------------------------------------------------------------
+
+const { SmartAPIGeneratorWithJMeter } = require('./lib/smart-api-generator-with-jmeter');
+
+const apiGen = new SmartAPIGeneratorWithJMeter({
+  outputDir: './generated-api-tests',
+  useAI: true,
+  anthropicApiKey: 'YOUR_TR_API_KEY',  // Your TR-issued API key
+  anthropicBaseURL: 'https://litellm.anthropic.thomsonreuters.com'  // TR proxy
+});
+
+// Rest of your test code...
+await apiGen.captureFromBrowser(page);
+apiGen.startTransaction('Login');
+// ... your test steps ...
+apiGen.endTransaction();
+await apiGen.saveGeneratedTests();
+
+
+OPTION 2: Use Direct Anthropic API (Personal/External projects)
+----------------------------------------------------------------
+
+const apiGen = new SmartAPIGeneratorWithJMeter({
+  outputDir: './generated-api-tests',
+  useAI: true,
+  anthropicApiKey: process.env.ANTHROPIC_API_KEY  // From https://console.anthropic.com
+  // No anthropicBaseURL needed - uses default Anthropic endpoint
+});
+
+
+OPTION 3: Disable AI (Use only regex-based correlation)
+--------------------------------------------------------
+
+const apiGen = new SmartAPIGeneratorWithJMeter({
+  outputDir: './generated-api-tests',
+  useAI: false  // Disable AI analysis
+});
+
+
+================================================================================
+ENVIRONMENT VARIABLE SETUP
+================================================================================
+
+For TR Proxy:
+-------------
+export ANTHROPIC_API_KEY="your-tr-api-key"
+export ANTHROPIC_BASE_URL="https://litellm.anthropic.thomsonreuters.com"
+
+Then in your code:
+const apiGen = new SmartAPIGeneratorWithJMeter({
+  anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+  anthropicBaseURL: process.env.ANTHROPIC_BASE_URL
+});
+
+
+For Direct Anthropic:
+---------------------
+export ANTHROPIC_API_KEY="sk-ant-api03-..."
+
+Then in your code:
+const apiGen = new SmartAPIGeneratorWithJMeter({
+  // Will use ANTHROPIC_API_KEY from environment automatically
+});
+
+
+================================================================================
+GETTING YOUR TR API KEY
+================================================================================
+
+1. Check with your TR IT administrator or security team
+2. May need to request access through internal portal
+3. Corporate SSO may be required
+4. Check TR internal documentation for Anthropic/LLM access
+
+
+================================================================================
+TESTING YOUR CONFIGURATION
+================================================================================
+
+Quick test to verify your setup works:
+
+const { SmartAPIGeneratorWithJMeter } = require('./lib/smart-api-generator-with-jmeter');
+
+async function testAIConnection() {
+  const apiGen = new SmartAPIGeneratorWithJMeter({
+    useAI: true,
+    anthropicApiKey: 'YOUR_KEY_HERE',
+    anthropicBaseURL: 'https://litellm.anthropic.thomsonreuters.com'
+  });
+  
+  // Create a dummy transaction
+  apiGen.startTransaction('Test');
+  apiGen.currentTransaction.apiCalls.push({
+    method: 'POST',
+    url: 'https://test.com/api/login',
+    body: '{"username":"test"}',
+    status: 200,
+    responseBody: { token: 'abc123' },
+    timestamp: Date.now()
+  });
+  apiGen.currentTransaction.apiCalls.push({
+    method: 'GET',
+    url: 'https://test.com/api/data',
+    headers: { Authorization: 'Bearer abc123' },
+    status: 200,
+    responseBody: { data: [] },
+    timestamp: Date.now() + 100
+  });
+  apiGen.endTransaction();
+  
+  try {
+    await apiGen.runAICorrelationAnalysis();
+    console.log('✅ AI connection successful!');
+  } catch (error) {
+    console.error('❌ AI connection failed:', error.message);
+  }
+}
+
+testAIConnection();
+
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+ERROR: "Invalid API key"
+------------------------
+- Verify your TR API key is correct
+- Check if key has expired
+- Ensure you're using the TR proxy URL, not direct Anthropic URL
+
+
+ERROR: "Connection refused" or "Network error"
+-----------------------------------------------
+- Check you're on TR network (VPN if remote)
+- Verify proxy URL is correct
+- Check firewall settings
+- May need to whitelist the proxy URL
+
+
+ERROR: "Model not found"
+------------------------
+- TR proxy may not support all models
+- Currently using: claude-3-5-sonnet-20241022
+- Check with TR team which models are available
+
+
+AI Analysis Skipped (useAI=false, API key=false)
+-------------------------------------------------
+- API key not set in environment or constructor
+- Set ANTHROPIC_API_KEY environment variable OR
+- Pass anthropicApiKey in constructor
+
+
+================================================================================
+SECURITY NOTES
+================================================================================
+
+✓ Never commit API keys to Git
+✓ Use environment variables or secure vaults
+✓ TR proxy may log API calls for compliance
+✓ Follow TR's data handling policies
+✓ Don't send sensitive production data to external APIs
+✓ Review generated tests before committing
+
+
+================================================================================
+COST CONSIDERATIONS
+================================================================================
+
+Direct Anthropic API:
+- ~$0.003 per 1K tokens input
+- ~$0.015 per 1K tokens output
+- Typical test generation: $0.05 - $0.20
+
+TR Proxy:
+- May be free/subsidized internally
+- Check with TR IT for billing details
+- Usage may be tracked/limited
+
+
+================================================================================
+SUPPORT
+================================================================================
+
+TR Proxy Issues:
+- Contact TR IT Support
+- Check internal documentation portal
+- File ticket with Cloud/AI team
+
+Anthropic API Issues:
+- https://docs.anthropic.com
+- support@anthropic.com
+- Discord community
+
+Code Issues:
+- Review lib/ai-correlation-analyzer.js
+- Check docs/AI_CORRELATION_GUIDE.txt
+- Review error logs for details
+
+
+================================================================================
