@@ -21,41 +21,10 @@ env:
   ECR_REPOSITORY_PREFIX: jmeter-framework
 
 jobs:
-  # STEP 1: Check what files changed to skip unnecessary builds
-  check-changes:
-    name: Detect Changes
-    runs-on: ubuntu-latest
-    outputs:
-      docker: ${{ steps.filter.outputs.docker }}
-      lambda: ${{ steps.filter.outputs.lambda }}
-      infra: ${{ steps.filter.outputs.infra }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Check file changes
-        uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            docker:
-              - 'docker/**'
-              - 'lib/**'
-              - 'java/**'
-              - 'package.json'
-              - 'package-lock.json'
-            lambda:
-              - 'iac/lambda/**'
-            infra:
-              - 'iac/lib/**'
-              - 'iac/bin/**'
-              - 'iac/package*.json'
-
-  # STEP 2: Deploy infrastructure FIRST (CDK creates ECR repo, ECS cluster, all AWS resources)
+  # STEP 1: Deploy infrastructure FIRST (CDK creates ECR repo, ECS cluster, all AWS resources)
   deploy-infrastructure:
     name: Deploy Infrastructure
     runs-on: ubuntu-latest
-    needs: check-changes
     if: |
       github.event_name == 'push' || github.event.inputs.deploy_infra == 'true'
     
@@ -94,6 +63,13 @@ jobs:
         run: |
           cd iac
           npm ci
+      
+      - name: CDK Bootstrap (First-time setup)
+        run: |
+          cd iac
+          echo "🔧 Bootstrapping CDK environment..."
+          npx cdk bootstrap
+          echo "✅ CDK Bootstrap complete"
       
       - name: CDK Synth
         run: |
@@ -152,11 +128,11 @@ jobs:
           echo ""
           echo "➡️  Next: Build & push Docker image to the ECR created by CDK"
 
-  # STEP 3: Build and push Docker image to ECR (which was created by CDK in Step 2)
+  # STEP 2: Build and push Docker image to ECR (which was created by CDK in Step 1)
   build-and-push-image:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
-    needs: [check-changes, deploy-infrastructure]
+    needs: deploy-infrastructure
     # Build if: manual trigger OR any push to main
     # AND infrastructure deployment was successful
     if: |
