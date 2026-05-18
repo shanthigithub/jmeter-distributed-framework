@@ -12,6 +12,7 @@ import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as sns from 'aws-cdk-lib/aws-sns';
 import * as subscriptions from 'aws-cdk-lib/aws-sns-subscriptions';
 import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
+import * as sqs from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
 import { config } from '../environments/config';
 import * as path from 'path';
@@ -63,6 +64,21 @@ export class JMeterEcsStack extends cdk.Stack {
           transitionAfter: cdk.Duration.days(30),
         }],
       }],
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // SQS QUEUE FOR CONTAINER SYNCHRONIZATION
+    // ═══════════════════════════════════════════════════════════════════════
+
+    // SQS FIFO queue for coordinating multi-container test execution
+    // Replaces S3-based signals/ folder with zero-cost, auto-cleanup messaging
+    const signalsQueue = new sqs.Queue(this, 'TestSignalsQueue', {
+      queueName: 'jmeter-test-signals.fifo',
+      fifo: true, // FIFO ensures message ordering and exactly-once delivery
+      contentBasedDeduplication: true, // Prevents duplicate signals based on content
+      retentionPeriod: cdk.Duration.hours(1), // Auto-delete messages after 1 hour
+      visibilityTimeout: cdk.Duration.seconds(30), // Time for container to process message
+      receiveMessageWaitTime: cdk.Duration.seconds(20), // Long polling - reduces API calls
     });
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -245,6 +261,10 @@ export class JMeterEcsStack extends cdk.Stack {
       resources: [taskRole.roleArn, taskExecutionRole.roleArn],
     }));
 
+    // Grant SQS permissions (after roles are created)
+    signalsQueue.grantSendMessages(lambdaRole); // Lambda sends START signals
+    signalsQueue.grantConsumeMessages(taskRole); // Containers receive and delete messages
+
     // ═══════════════════════════════════════════════════════════════════════
     // ECS TASK DEFINITION
     // ═══════════════════════════════════════════════════════════════════════
@@ -372,6 +392,7 @@ export class JMeterEcsStack extends cdk.Stack {
         RESULTS_BUCKET: config.resultsBucket,
         SUBNETS: vpc.publicSubnets.map(s => s.subnetId).join(','),
         SECURITY_GROUPS: ecsSecurityGroup.securityGroupId,
+        SIGNALS_QUEUE_URL: signalsQueue.queueUrl, // SQS queue for container sync
       },
     });
 
@@ -405,6 +426,7 @@ export class JMeterEcsStack extends cdk.Stack {
         CONFIG_BUCKET: config.configBucket,
         MAX_WAIT_SECONDS: '300',  // 5 minutes max wait for all containers
         POLL_INTERVAL_SECONDS: '5',  // Check every 5 seconds
+        SIGNALS_QUEUE_URL: signalsQueue.queueUrl, // SQS queue for sending START signals
       },
     });
 

@@ -409,15 +409,22 @@ echo ""
 # If ENABLE_SYNC=true, wait for START signal from coordinator before running test
 if [ "${ENABLE_SYNC:-false}" = "true" ]; then
     echo "=========================================="
-    echo "[SYNC] Waiting for START signal"
+    echo "[SYNC] Waiting for START signal via SQS"
     echo "=========================================="
     echo "[SYNC] Container is READY"
     echo "[SYNC] Waiting for coordinator to signal all containers..."
     echo ""
     
-    SIGNAL_KEY="signals/${RUN_ID}/START"
+    if [ -z "$SIGNALS_QUEUE_URL" ]; then
+        echo " [ERROR] SIGNALS_QUEUE_URL not set but ENABLE_SYNC=true"
+        exit 1
+    fi
+    
+    echo "[SYNC] Queue URL: ${SIGNALS_QUEUE_URL}"
+    echo "[SYNC] Message Group: ${RUN_ID}_${TEST_ID}"
+    echo ""
+    
     MAX_SYNC_WAIT="${MAX_SYNC_WAIT:-600}"  # 10 minutes default
-    SYNC_POLL_INTERVAL="${SYNC_POLL_INTERVAL:-3}"  # 3 seconds default
     
     sync_start_time=$(date +%s)
     sync_attempt=0
@@ -429,41 +436,53 @@ if [ "${ENABLE_SYNC:-false}" = "true" ]; then
         # Check timeout
         if [ $sync_elapsed -gt $MAX_SYNC_WAIT ]; then
             echo " [ERROR] Timeout waiting for START signal after ${sync_elapsed}s"
-            echo "[ERROR] Expected signal at: s3://${CONFIG_BUCKET}/${SIGNAL_KEY}"
+            echo "[ERROR] Expected message in queue: ${SIGNALS_QUEUE_URL}"
             exit 1
         fi
         
-        # Check if START signal exists in S3
-        if aws s3 ls "s3://${CONFIG_BUCKET}/${SIGNAL_KEY}" >/dev/null 2>&1; then
-            echo " [SYNC] START signal received!"
+        # Poll SQS for START message (long polling with 20s wait time)
+        sqs_response=$(aws sqs receive-message \
+            --queue-url "${SIGNALS_QUEUE_URL}" \
+            --max-number-of-messages 1 \
+            --wait-time-seconds 20 \
+            --attribute-names All \
+            --message-attribute-names All \
+            2>&1)
+        
+        # Check if we received a message
+        if echo "$sqs_response" | grep -q '"Messages"'; then
+            echo " [SYNC] START signal received from SQS!"
             
-            # Download and display signal data
-            signal_data=$(aws s3 cp "s3://${CONFIG_BUCKET}/${SIGNAL_KEY}" - 2>/dev/null)
-            if [ -n "$signal_data" ]; then
+            # Extract message body and receipt handle
+            message_body=$(echo "$sqs_response" | python3 -c "import sys, json; print(json.load(sys.stdin)['Messages'][0]['Body'])" 2>/dev/null)
+            receipt_handle=$(echo "$sqs_response" | python3 -c "import sys, json; print(json.load(sys.stdin)['Messages'][0]['ReceiptHandle'])" 2>/dev/null)
+            
+            if [ -n "$message_body" ]; then
                 echo "[SYNC] Signal details:"
-                echo "$signal_data" | grep -E '"(timestamp|taskCount|message)"' || echo "$signal_data"
+                echo "$message_body" | python3 -m json.tool 2>/dev/null | grep -E '"(timestamp|taskCount|message)"' || echo "$message_body"
             fi
             
             echo "[SYNC] All containers synchronized - proceeding with test"
             
-            # Delete signal immediately - no longer needed after reading
-            echo "[SYNC] Cleaning up temporary signal file..."
-            if aws s3 rm "s3://${CONFIG_BUCKET}/${SIGNAL_KEY}" 2>/dev/null; then
-                echo "   Deleted: s3://${CONFIG_BUCKET}/${SIGNAL_KEY}"
-            else
-                echo "    Could not delete signal (may not have permissions)"
+            # Delete message from queue - no longer needed
+            if [ -n "$receipt_handle" ]; then
+                echo "[SYNC] Removing message from queue..."
+                if aws sqs delete-message \
+                    --queue-url "${SIGNALS_QUEUE_URL}" \
+                    --receipt-handle "$receipt_handle" 2>/dev/null; then
+                    echo "   Message deleted from SQS queue"
+                else
+                    echo "    Could not delete message (will auto-expire)"
+                fi
             fi
             echo ""
             break
         fi
         
-        # Log progress every 10 attempts
-        if [ $((sync_attempt % 10)) -eq 0 ]; then
+        # Log progress every 3 attempts (every ~60s with 20s long polling)
+        if [ $((sync_attempt % 3)) -eq 0 ]; then
             echo "[SYNC] Still waiting... (${sync_elapsed}s elapsed, attempt ${sync_attempt})"
         fi
-        
-        # Wait before next check
-        sleep $SYNC_POLL_INTERVAL
     done
 else
     echo "[SYNC] Synchronization disabled - starting immediately"

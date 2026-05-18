@@ -12,7 +12,7 @@ import time
 from datetime import datetime
 
 ecs = boto3.client('ecs')
-s3 = boto3.client('s3')
+sqs = boto3.client('sqs')
 
 def handler(event, context):
     """
@@ -127,28 +127,34 @@ def handler(event, context):
         print(f"   ⏳ Waiting {poll_interval}s before next check...")
         time.sleep(poll_interval)
     
-    # All tasks are RUNNING - write START signal to S3
-    signal_key = f"signals/{run_id}/START"
+    # All tasks are RUNNING - send START signal via SQS
+    queue_url = os.environ['SIGNALS_QUEUE_URL']
+    
     signal_data = {
         'runId': run_id,
         'testId': test_id,
         'timestamp': datetime.utcnow().isoformat(),
         'taskCount': expected_count,
         'taskArns': task_arns,
-        'message': 'All containers ready - START test execution'
+        'message': 'START'  # Simple command for containers to begin
     }
     
     try:
-        print(f"[SIGNAL] Writing START signal to s3://{config_bucket}/{signal_key}")
-        s3.put_object(
-            Bucket=config_bucket,
-            Key=signal_key,
-            Body=json.dumps(signal_data, indent=2),
-            ContentType='application/json'
+        print(f"[SIGNAL] Sending START signal to SQS queue: {queue_url}")
+        print(f"[SIGNAL] Message group ID: {run_id}_{test_id}")
+        
+        response = sqs.send_message(
+            QueueUrl=queue_url,
+            MessageBody=json.dumps(signal_data),
+            MessageGroupId=f"{run_id}_{test_id}",  # FIFO: groups messages by test
+            MessageDeduplicationId=f"{run_id}_{test_id}_START_{int(time.time() * 1000)}"  # Unique ID
         )
-        print(f"✅ [SIGNAL] START signal written successfully")
+        
+        print(f"✅ [SIGNAL] START signal sent successfully")
+        print(f"   Message ID: {response['MessageId']}")
+        print(f"   Sequence Number: {response.get('SequenceNumber', 'N/A')}")
     except Exception as e:
-        print(f"❌ [ERROR] Failed to write START signal: {e}")
+        print(f"❌ [ERROR] Failed to send START signal to SQS: {e}")
         raise
     
     return {
@@ -157,7 +163,9 @@ def handler(event, context):
             'runId': run_id,
             'testId': test_id,
             'taskCount': expected_count,
-            'signalKey': signal_key,
+            'signalMethod': 'SQS',
+            'queueUrl': queue_url,
+            'messageId': response['MessageId'],
             'waitTimeSeconds': round(time.time() - start_time, 1),
             'message': 'All tasks synchronized and ready to start'
         }

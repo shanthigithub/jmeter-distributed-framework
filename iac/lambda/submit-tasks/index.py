@@ -41,6 +41,7 @@ def lambda_handler(event, context):
         results_bucket = os.environ['RESULTS_BUCKET']
         subnets = os.environ['SUBNETS'].split(',')
         security_groups = os.environ['SECURITY_GROUPS'].split(',')
+        signals_queue_url = os.environ['SIGNALS_QUEUE_URL']
         
         tests = event.get('tests', [])
         run_id = event.get('runId', 'unknown')
@@ -146,6 +147,8 @@ def lambda_handler(event, context):
                     # Thread distribution for parallel execution
                     {'name': 'TOTAL_THREADS', 'value': str(threads)},
                     {'name': 'NUM_CONTAINERS', 'value': str(num_containers)},
+                    # SQS queue for container synchronization (replaces S3 signals/)
+                    {'name': 'SIGNALS_QUEUE_URL', 'value': signals_queue_url},
                 ]
                 
                 # Add Datadog configuration if enabled in test config
