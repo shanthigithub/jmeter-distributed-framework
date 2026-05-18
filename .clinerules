@@ -26,6 +26,31 @@ Test files contain sensitive test data and credentials. They should be stored in
 ### Exception
 Only if the user explicitly requests to commit test files with clear confirmation.
 
+### NEVER Commit IAM Policy Files to GitHub
+- Do NOT create or commit ANY IAM policy JSON files (*-policy.json, *-permissions.json, *-trust-policy.json)
+- Do NOT commit files in docs/iam/ directory
+- IAM policy files should ONLY exist locally for manual AWS Console application
+- Follow cp_jmeter-dev pattern: they do NOT commit IAM policies
+
+### Blocked Files
+- github-actions-trust-policy.json
+- github-actions-permissions.json  
+- github-actions-cdk-permissions.json
+- Any files matching: *-policy.json, *-permissions.json, *-trust-policy.json
+- docs/iam/*.json
+
+### Reason
+IAM policies contain security-sensitive AWS permissions configurations. These should be applied manually via AWS Console or CLI, not version controlled. This follows industry best practices and the pattern used in cp_jmeter-dev reference project.
+
+### Exception
+NONE - IAM policy files must NEVER be committed under any circumstances.
+
+### If User Requests IAM Policy Creation
+1. Inform user that IAM policies should NOT be committed to GitHub
+2. Explain they can apply policies manually via AWS Console or CLI
+3. Provide the policy content in the chat response instead
+4. Reference cp_jmeter-dev as the standard (they don't commit IAM files)
+
 ## Communication Guidelines
 - When completing tasks, provide results directly without creating summary .md files
 - Use inline responses instead of documentation files

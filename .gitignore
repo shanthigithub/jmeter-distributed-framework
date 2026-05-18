@@ -53,9 +53,15 @@ summary*.xml
 # Allow Log4j2 config
 !docker/log4j2.xml
 
-# Git ignore for uploaded files
+# IAM Policy Files (NEVER commit - security sensitive)
+# These contain AWS IAM permissions and should only exist locally
 github-actions-trust-policy.json
 github-actions-permissions.json
+github-actions-cdk-permissions.json
+docs/iam/*.json
+*-trust-policy.json
+*-permissions.json
+*-policy.json
 
 # Prevent markdown documentation files
 *.md
