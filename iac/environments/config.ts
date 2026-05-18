@@ -9,12 +9,13 @@ export const config = {
   // AWS Account (will be automatically detected from CDK context)
   region: 'us-east-1',
   
-  // S3 Buckets
-  configBucket: 'jmeter-framework-config',
-  resultsBucket: 'jmeter-framework-results',
+  // S3 Buckets (suffixed with account ID for global uniqueness)
+  // CDK will automatically replace ${AWS::AccountId} with actual account ID
+  configBucket: 'jmeter-framework-config-${AWS::AccountId}',
+  resultsBucket: 'jmeter-framework-results-${AWS::AccountId}',
   
-  // ECR
-  ecrRepoName: 'jmeter-framework',
+  // ECR (suffixed with account ID)
+  ecrRepoName: 'jmeter-framework-${AWS::AccountId}',
   
   // ECS Fargate Configuration
   ecs: {

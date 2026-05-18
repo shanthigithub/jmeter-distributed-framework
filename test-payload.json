@@ -1,6 +1,0 @@
-{
-  "testScript": "tests/DCP_API_May_v2.jmx",
-  "testId": "test-1",
-  "execute": true,
-  "configBucket": "jmeter-batch-config"
-}

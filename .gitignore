@@ -20,6 +20,12 @@ iac/cdk.out/
 iac/node_modules/
 iac/.cdk.staging/
 
+# TypeScript build artifacts (auto-generated, should not be committed)
+iac/**/*.js
+iac/**/*.d.ts
+# Keep Lambda function files (these are source, not build artifacts)
+!iac/lambda/**/*.js
+
 # Temporary files
 *.log
 *.tmp
@@ -57,6 +63,33 @@ github-actions-permissions.json
 README*
 CHANGELOG*
 
-# Exclude copied review directories
-cp_jmeter-dev/
+# Personal/temporary folders
 k6-framework-personal/
+
+# Temporary log and debug files (TR deployment cleanup)
+*-logs.txt
+*-logs.json
+cloudwatch-logs.json
+execution-*.json
+temp-*.jmx
+temp-*.txt
+temp-*.py
+function.zip
+response.json
+sfn-definition.json
+after-screenshots.json
+complete-logs.json
+full-upload-sequence.json
+latest-upload-logs.json
+
+# Temporary scripts (local debugging)
+analyze-*.py
+check-*.py
+fetch-*.py
+verify-*.js
+
+# Node modules (will be installed via npm)
+node_modules/
+
+# CDK build outputs
+cdk.out/
