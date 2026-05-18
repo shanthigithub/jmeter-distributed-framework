@@ -97,6 +97,22 @@ jobs:
           echo "id=$ACCOUNT_ID" >> $GITHUB_OUTPUT
           echo "ECR Repository: ${ECR_REPOSITORY_PREFIX}-${ACCOUNT_ID}"
       
+      - name: Create ECR repository if it doesn't exist
+        env:
+          ECR_REPOSITORY: ${{ env.ECR_REPOSITORY_PREFIX }}-${{ steps.account.outputs.id }}
+        run: |
+          # Check if repository exists
+          if aws ecr describe-repositories --repository-names $ECR_REPOSITORY 2>/dev/null; then
+            echo "✅ ECR repository already exists: $ECR_REPOSITORY"
+          else
+            echo "🔨 Creating ECR repository: $ECR_REPOSITORY"
+            aws ecr create-repository \
+              --repository-name $ECR_REPOSITORY \
+              --image-scanning-configuration scanOnPush=true \
+              --encryption-configuration encryptionType=AES256
+            echo "✅ ECR repository created: $ECR_REPOSITORY"
+          fi
+      
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         env:
