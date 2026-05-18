@@ -233,9 +233,6 @@ RUN mkdir -p /jmeter /jmeter/scripts /jmeter/data /jmeter/results
 # These are used by Playwright JS tests via require('../lib/test-runner')
 COPY lib /jmeter/lib
 
-# Copy Healwright configuration (needed by smart-healer.js)
-COPY healwright.config.js /jmeter/healwright.config.js
-
 # Force rebuild to include lib/implicit-wait-healer.js (commit 35fb9602)
 # Rebuild 2026-05-18: Ensure framework screenshot capture feature is deployed
 
