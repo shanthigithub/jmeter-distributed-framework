@@ -41,7 +41,7 @@ export class JMeterEcsStack extends cdk.Stack {
     // ═══════════════════════════════════════════════════════════════════════
 
     const configBucket = new s3.Bucket(this, 'ConfigBucket', {
-      bucketName: config.configBucket,
+      bucketName: `${config.configBucketPrefix}-${cdk.Aws.ACCOUNT_ID}`,
       versioned: true,
       encryption: config.security.enableEncryption 
         ? s3.BucketEncryption.S3_MANAGED 
@@ -51,7 +51,7 @@ export class JMeterEcsStack extends cdk.Stack {
     });
 
     const resultsBucket = new s3.Bucket(this, 'ResultsBucket', {
-      bucketName: config.resultsBucket,
+      bucketName: `${config.resultsBucketPrefix}-${cdk.Aws.ACCOUNT_ID}`,
       encryption: config.security.enableEncryption 
         ? s3.BucketEncryption.S3_MANAGED 
         : s3.BucketEncryption.UNENCRYPTED,
@@ -130,7 +130,7 @@ export class JMeterEcsStack extends cdk.Stack {
     // ═══════════════════════════════════════════════════════════════════════
 
     const repository = new ecr.Repository(this, 'JMeterRepository', {
-      repositoryName: config.ecrRepoName,
+      repositoryName: `${config.ecrRepoPrefix}-${cdk.Aws.ACCOUNT_ID}`,
       imageScanOnPush: true,
       removalPolicy: cdk.RemovalPolicy.RETAIN,
       lifecycleRules: [{
@@ -312,8 +312,8 @@ export class JMeterEcsStack extends cdk.Stack {
         logGroup: apiLogGroup,
       }),
       environment: {
-        CONFIG_BUCKET: config.configBucket,
-        RESULTS_BUCKET: config.resultsBucket,
+        CONFIG_BUCKET: configBucket.bucketName,
+        RESULTS_BUCKET: resultsBucket.bucketName,
         AWS_REGION: this.region,
         TEST_TYPE: 'api',
       },
@@ -345,8 +345,8 @@ export class JMeterEcsStack extends cdk.Stack {
         logGroup: browserLogGroup,
       }),
       environment: {
-        CONFIG_BUCKET: config.configBucket,
-        RESULTS_BUCKET: config.resultsBucket,
+        CONFIG_BUCKET: configBucket.bucketName,
+        RESULTS_BUCKET: resultsBucket.bucketName,
         AWS_REGION: this.region,
         TEST_TYPE: 'browser',
       },
@@ -370,7 +370,7 @@ export class JMeterEcsStack extends cdk.Stack {
       memorySize: config.lambda.memoryMB,
       timeout: cdk.Duration.seconds(config.lambda.timeoutSeconds.readConfig),
       environment: {
-        CONFIG_BUCKET: config.configBucket,
+        CONFIG_BUCKET: configBucket.bucketName,
       },
     });
 
@@ -388,8 +388,8 @@ export class JMeterEcsStack extends cdk.Stack {
         ECS_CLUSTER: cluster.clusterName,
         TASK_DEF_ARN_API: apiTaskDefinition.taskDefinitionArn,
         TASK_DEF_ARN_BROWSER: browserTaskDefinition.taskDefinitionArn,
-        CONFIG_BUCKET: config.configBucket,
-        RESULTS_BUCKET: config.resultsBucket,
+        CONFIG_BUCKET: configBucket.bucketName,
+        RESULTS_BUCKET: resultsBucket.bucketName,
         SUBNETS: vpc.publicSubnets.map(s => s.subnetId).join(','),
         SECURITY_GROUPS: ecsSecurityGroup.securityGroupId,
         SIGNALS_QUEUE_URL: signalsQueue.queueUrl, // SQS queue for container sync
@@ -423,7 +423,7 @@ export class JMeterEcsStack extends cdk.Stack {
       timeout: cdk.Duration.seconds(360), // 6 minutes (needs to wait for all containers)
       environment: {
         ECS_CLUSTER: cluster.clusterName,
-        CONFIG_BUCKET: config.configBucket,
+        CONFIG_BUCKET: configBucket.bucketName,
         MAX_WAIT_SECONDS: '300',  // 5 minutes max wait for all containers
         POLL_INTERVAL_SECONDS: '5',  // Check every 5 seconds
         SIGNALS_QUEUE_URL: signalsQueue.queueUrl, // SQS queue for sending START signals
@@ -441,7 +441,7 @@ export class JMeterEcsStack extends cdk.Stack {
       memorySize: config.lambda.memoryMB,
       timeout: cdk.Duration.seconds(config.lambda.timeoutSeconds.mergeResults),
       environment: {
-        RESULTS_BUCKET: config.resultsBucket,
+        RESULTS_BUCKET: resultsBucket.bucketName,
       },
     });
 
@@ -482,7 +482,7 @@ export class JMeterEcsStack extends cdk.Stack {
           'testId.$': '$.testId',
           'testType.$': '$.testType',
           'execute.$': '$.execute',
-          'configBucket': config.configBucket,
+          'configBucket': configBucket.bucketName,
           // Pass enableDatadog and datadogSite only if they exist (added by ReadConfig when user enables Datadog)
           'enableDatadog.$': '$.enableDatadog',
           'datadogSite.$': '$.datadogSite',
@@ -531,7 +531,7 @@ export class JMeterEcsStack extends cdk.Stack {
           'taskArns.$': '$.test.taskArns',
           'expectedTaskCount.$': '$.test.numContainers',
           'clusterArn': cluster.clusterArn,
-          'configBucket': config.configBucket,
+          'configBucket': configBucket.bucketName,
         }),
         resultSelector: {
           'Payload.$': '$.Payload',

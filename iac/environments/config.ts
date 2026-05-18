@@ -10,12 +10,12 @@ export const config = {
   region: 'us-east-1',
   
   // S3 Buckets (suffixed with account ID for global uniqueness)
-  // CDK will automatically replace ${AWS::AccountId} with actual account ID
-  configBucket: 'jmeter-framework-config-${AWS::AccountId}',
-  resultsBucket: 'jmeter-framework-results-${AWS::AccountId}',
+  // Note: Use cdk.Aws.ACCOUNT_ID token when constructing bucket names in stack
+  configBucketPrefix: 'jmeter-framework-config',
+  resultsBucketPrefix: 'jmeter-framework-results',
   
   // ECR (suffixed with account ID)
-  ecrRepoName: 'jmeter-framework-${AWS::AccountId}',
+  ecrRepoPrefix: 'jmeter-framework',
   
   // ECS Fargate Configuration
   ecs: {
